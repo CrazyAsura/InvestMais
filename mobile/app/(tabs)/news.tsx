@@ -2,10 +2,10 @@ import { StyleSheet } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 
-export default function BankScreen() {
+export default function NewsScreen() {
   return (
     <ThemedView style={styles.container}>
-      <ThemedText type="title">Banco</ThemedText>
+      <ThemedText type="title">Notícias</ThemedText>
     </ThemedView>
   );
 }
