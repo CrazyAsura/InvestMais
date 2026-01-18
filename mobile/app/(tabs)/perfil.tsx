@@ -185,6 +185,20 @@ export default function PerfilScreen() {
         </Box>
 
         <VStack space={3} mt="4">
+          {user?.role === 'admin' && (
+            <Button 
+              size="lg" 
+              variant="solid" 
+              bg="error.600"
+              _text={{ color: 'white', fontWeight: 'bold' }}
+              leftIcon={<Icon as={<MaterialIcons name="security" />} size="sm" color="white" />}
+              onPress={() => router.push('/admin/activity-log')}
+              mb={2}
+            >
+              Monitoramento (Admin)
+            </Button>
+          )}
+
           <Button 
             size="lg" 
             variant="outline" 
