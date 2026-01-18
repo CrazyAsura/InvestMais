@@ -12,7 +12,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { FormSection } from '@/components/ui/form-section';
 import { FormInput } from '@/components/ui/form-input';
 import { SearchableSelect } from '@/components/ui/searchable-select';
-import { registerSchema, RegisterFormData } from '@/lib/zod/register';
+import { registerBaseSchema, RegisterFormData } from '@/lib/zod/register';
 import { maskCPF, maskCNPJ, maskCEP, maskDate, maskCurrency, maskPhone } from '@/services/masks';
 import { getAddressByCEP } from '@/services/viacep';
 import { getStates, getCitiesByState } from '@/services/ibge';
@@ -24,12 +24,13 @@ import { RootState } from '@/store';
 import { z } from 'zod';
 
 // Schema simplificado para edição (sem documentType e document que não são editáveis)
-const editProfileSchema = registerSchema.omit({ 
+const editProfileSchema = registerBaseSchema.omit({ 
   documentType: true, 
   document: true,
-  password: true 
+  password: true,
+  confirmPassword: true
 }).extend({
-  password: z.string().min(6, 'A senha deve ter pelo menos 6 caracteres').optional().or(z.literal('')),
+  password: z.string().min(8, 'A senha deve ter pelo menos 8 caracteres').optional().or(z.literal('')),
 });
 
 type EditProfileFormData = z.infer<typeof editProfileSchema>;
@@ -56,9 +57,11 @@ export default function EditProfileScreen() {
       email: user?.email || '',
       birthDate: user?.birthDate ? new Date(user.birthDate).toLocaleDateString('pt-BR') : '',
       gender: user?.gender || '',
-      sex: user?.sex || '',
+      sexuality: user?.sexuality || '',
       salary: user?.salary || '',
       cep: user?.address?.zipCode || '',
+      street: user?.address?.street || '',
+      neighborhood: user?.address?.neighborhood || '',
       number: user?.address?.number || '',
       city: user?.address?.city || '',
       state: user?.address?.state || '',
@@ -104,6 +107,8 @@ export default function EditProfileScreen() {
         if (address) {
           setValue('state', address.uf);
           setValue('city', address.localidade);
+          setValue('street', address.logradouro);
+          setValue('neighborhood', address.bairro);
         }
       }
     };
@@ -114,22 +119,33 @@ export default function EditProfileScreen() {
     try {
       setIsSubmitting(true);
       
+      // Converter data de nascimento DD/MM/AAAA para YYYY-MM-DD
+      let isoBirthDate = data.birthDate;
+      if (data.birthDate.includes('/')) {
+        const [day, month, year] = data.birthDate.split('/');
+        isoBirthDate = `${year}-${month}-${day}`;
+      }
+
       const payload: any = {
         name: data.name,
         email: data.email,
-        birthDate: data.birthDate,
+        birthDate: isoBirthDate,
         gender: data.gender,
-        sex: data.sex,
+        sexuality: data.sexuality,
+        salary: data.salary ? parseFloat(data.salary.replace(/[^\d,]/g, '').replace(',', '.')) : undefined,
         address: {
           zipCode: data.cep,
+          street: data.street,
+          neighborhood: data.neighborhood,
           number: data.number,
           city: data.city,
           state: data.state,
           country: data.country,
         },
         phone: {
+          ddi: data.ddi.replace('+', ''),
           ddd: data.ddd,
-          number: data.phone,
+          number: data.phone.replace(/\D/g, ''),
         }
       };
 
@@ -257,7 +273,7 @@ export default function EditProfileScreen() {
                 <Box flex={1}>
                   <Controller
                     control={control}
-                    name="sex"
+                    name="sexuality"
                     render={({ field: { onChange, value } }) => (
                       <SearchableSelect
                         label="Sexo"
@@ -320,6 +336,36 @@ export default function EditProfileScreen() {
                     mask={maskCEP}
                     keyboardType="numeric"
                     error={errors.cep?.message}
+                  />
+                )}
+              />
+
+              <Controller
+                control={control}
+                name="street"
+                render={({ field: { onChange, value } }) => (
+                  <FormInput
+                    label="Logradouro"
+                    placeholder="Rua, Avenida, etc."
+                    value={value}
+                    onChangeText={onChange}
+                    icon="location-on"
+                    error={errors.street?.message}
+                  />
+                )}
+              />
+
+              <Controller
+                control={control}
+                name="neighborhood"
+                render={({ field: { onChange, value } }) => (
+                  <FormInput
+                    label="Bairro"
+                    placeholder="Seu bairro"
+                    value={value}
+                    onChangeText={onChange}
+                    icon="layers"
+                    error={errors.neighborhood?.message}
                   />
                 )}
               />

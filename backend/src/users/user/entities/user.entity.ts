@@ -5,7 +5,7 @@ export class User {
   document: string;
   birthDate: Date;
   gender: string;
-  sex: string;
+  sexuality: string;
   role: string;
   active: boolean;
   createdAt: Date;

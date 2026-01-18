@@ -15,32 +15,57 @@ import {
 import { MaterialIcons } from '@expo/vector-icons';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useToast } from 'native-base';
 
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { FormInput } from '@/components/ui/form-input';
 import { resetPasswordSchema, ResetPasswordFormData } from '@/lib/zod/reset-password';
+import api from '@/services/api';
 
 export default function ResetPasswordScreen() {
   const router = useRouter();
+  const toast = useToast();
   const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
     control,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<ResetPasswordFormData>({
     resolver: zodResolver(resetPasswordSchema),
   });
 
-  const onSubmit = (data: ResetPasswordFormData) => {
-    console.log('Resetando senha');
-    // Simular reset de senha e redirecionar para login
-    router.replace('/login');
+  const onSubmit = async (data: ResetPasswordFormData) => {
+    try {
+      setIsLoading(true);
+      await api.post('/auth/reset-password', {
+        email: data.email,
+        password: data.password,
+      });
+
+      toast.show({
+        description: "Senha redefinida com sucesso!",
+        placement: "top",
+        bg: "success.500"
+      });
+
+      router.replace('/login');
+    } catch (err: any) {
+      const message = err.response?.data?.message || 'Erro ao redefinir senha';
+      toast.show({
+        description: Array.isArray(message) ? message[0] : message,
+        placement: "top",
+        bg: "error.500"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -138,7 +163,7 @@ export default function ResetPasswordScreen() {
             bg={themeColors.tint}
             _pressed={{ bg: 'amber.600' }}
             onPress={handleSubmit(onSubmit)}
-            isLoading={isSubmitting}
+            isLoading={isLoading}
             borderRadius="xl"
             _text={{ fontWeight: 'bold', fontSize: 'md' }}
           >

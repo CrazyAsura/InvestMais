@@ -23,6 +23,11 @@ import { setCredentials, setLoading, setError } from '@/store/slices/authSlice';
 import { RootState } from '@/store';
 import api from '@/services/api';
 
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { loginSchema, LoginFormData } from '@/lib/zod/login';
+import { FormInput } from '@/components/ui/form-input';
+
 export default function LoginScreen() {
   const router = useRouter();
   const dispatch = useDispatch();
@@ -32,26 +37,18 @@ export default function LoginScreen() {
   
   const { isLoading, error } = useSelector((state: RootState) => state.auth);
   
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [isEmailFocused, setIsEmailFocused] = useState(false);
-  const [isPasswordFocused, setIsPasswordFocused] = useState(false);
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+  });
 
-  const handleLogin = async () => {
-    if (!email || !password) {
-      toast.show({
-        description: "Por favor, preencha todos os campos",
-        placement: "top",
-        variant: "subtle",
-        bg: "error.500"
-      });
-      return;
-    }
-
+  const onSubmit = async (data: LoginFormData) => {
     try {
       dispatch(setLoading(true));
-      const response = await api.post('/auth/login', { email, password });
+      const response = await api.post('/auth/login', data);
       
       const { user, token } = response.data;
       dispatch(setCredentials({ user, token }));
@@ -59,18 +56,18 @@ export default function LoginScreen() {
       toast.show({
         description: "Login realizado com sucesso!",
         placement: "top",
-        variant: "subtle",
         bg: "success.500"
       });
       
       router.replace('/(tabs)');
     } catch (err: any) {
       const message = err.response?.data?.message || 'Erro ao realizar login';
-      dispatch(setError(message));
+      const errorMessage = Array.isArray(message) ? message[0] : message;
+      
+      dispatch(setError(errorMessage));
       toast.show({
-        description: message,
+        description: errorMessage,
         placement: "top",
-        variant: "subtle",
         bg: "error.500"
       });
     } finally {
@@ -78,12 +75,9 @@ export default function LoginScreen() {
     }
   };
 
-  const inputBg = colorScheme === 'dark' ? '#1f2937' : '#f3f4f6'; // coolGray.800 / 100
-  const inputBgFocus = colorScheme === 'dark' ? '#374151' : '#e5e7eb'; // coolGray.700 / 200
-
   return (
     <Center w="100%" flex={1} bg={themeColors.background} px="6">
-      <Box safeArea p="2" py="8" w="100%" maxW="290">
+      <Box safeArea p="2" py="8" w="100%" maxW="350">
         <VStack space={2} alignItems="center" mb="10">
           <Heading 
             size="2xl" 
@@ -102,76 +96,58 @@ export default function LoginScreen() {
         </VStack>
 
         <VStack space={4} mt="5">
-          <FormControl>
-            <HStack 
-              alignItems="center" 
-              bg={isEmailFocused ? inputBgFocus : inputBg}
-              borderWidth={1}
-              borderColor={isEmailFocused ? themeColors.tint : 'transparent'}
-              borderRadius="md"
-              px="2"
-              height="12"
-            >
-              <Icon as={<MaterialIcons name="email" />} size={5} color={themeColors.icon} />
-              <TextInput
-                style={[styles.input, { color: themeColors.text }]}
-                placeholder="E-mail"
-                placeholderTextColor={themeColors.icon}
-                value={email}
-                onChangeText={setEmail}
-                onFocus={() => setIsEmailFocused(true)}
-                onBlur={() => setIsEmailFocused(false)}
+          <Controller
+            control={control}
+            name="email"
+            render={({ field: { onChange, value } }) => (
+              <FormInput
+                label="E-mail"
+                placeholder="seu@email.com"
+                value={value}
+                onChangeText={onChange}
+                icon="email"
                 keyboardType="email-address"
                 autoCapitalize="none"
+                error={errors.email?.message}
               />
-            </HStack>
-          </FormControl>
+            )}
+          />
           
-          <FormControl>
-            <HStack 
-              alignItems="center" 
-              bg={isPasswordFocused ? inputBgFocus : inputBg}
-              borderWidth={1}
-              borderColor={isPasswordFocused ? themeColors.tint : 'transparent'}
-              borderRadius="md"
-              px="2"
-              height="12"
-            >
-              <Icon as={<MaterialIcons name="lock" />} size={5} color={themeColors.icon} />
-              <TextInput
-                style={[styles.input, { color: themeColors.text }]}
-                placeholder="Senha"
-                placeholderTextColor={themeColors.icon}
-                value={password}
-                onChangeText={setPassword}
-                onFocus={() => setIsPasswordFocused(true)}
-                onBlur={() => setIsPasswordFocused(false)}
-                secureTextEntry={!showPassword}
+          <Controller
+            control={control}
+            name="password"
+            render={({ field: { onChange, value } }) => (
+              <FormInput
+                label="Senha"
+                placeholder="Sua senha"
+                value={value}
+                onChangeText={onChange}
+                icon="lock"
+                secureTextEntry
+                error={errors.password?.message}
               />
-              <Pressable onPress={() => setShowPassword(!showPassword)}>
-                <Icon as={<MaterialIcons name={showPassword ? "visibility" : "visibility-off"} />} size={5} color={themeColors.icon} />
-              </Pressable>
-            </HStack>
-            <Link 
-              _text={{
-                fontSize: "xs",
-                fontWeight: "700",
-                color: themeColors.icon
-              }} 
-              alignSelf="flex-end" 
-              mt="1"
-              onPress={() => router.push('/reset-password')}
-            >
-              Esqueceu a senha?
-            </Link>
-          </FormControl>
+            )}
+          />
+
+          <Link 
+            _text={{
+              fontSize: "xs",
+              fontWeight: "700",
+              color: themeColors.icon
+            }} 
+            alignSelf="flex-end" 
+            mt="-2"
+            onPress={() => router.push('/reset-password')}
+          >
+            Esqueceu a senha?
+          </Link>
 
           <Button 
             mt="6" 
             size="lg"
             bg={themeColors.tint}
             _pressed={{ bg: 'amber.600' }}
-            onPress={handleLogin}
+            onPress={handleSubmit(onSubmit)}
             isLoading={isLoading}
             borderRadius="xl"
             _text={{ fontWeight: 'bold', fontSize: 'md' }}

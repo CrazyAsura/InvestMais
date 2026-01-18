@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException, ConflictException, NotFoundException
 import { RegisterAuthDto } from './dto/register-auth.dto';
 import { LoginAuthDto } from './dto/login-auth.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { Model } from 'mongoose';
 import { User, UserDocument } from '../user/schema/user.schema';
 import { InjectModel } from '@nestjs/mongoose';
@@ -123,5 +124,20 @@ export class AuthService {
       message: 'Perfil atualizado com sucesso',
       user: updatedUser
     };
+  }
+
+  async resetPassword(resetPasswordDto: ResetPasswordDto) {
+    const { email, password } = resetPasswordDto;
+    
+    const user = await this.userModel.findOne({ email });
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado');
+    }
+
+    const hashedPassword = await argon2.hash(password);
+    user.password = hashedPassword;
+    await user.save();
+
+    return { message: 'Senha redefinida com sucesso' };
   }
 }

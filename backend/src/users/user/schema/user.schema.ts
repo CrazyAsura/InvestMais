@@ -23,13 +23,16 @@ export class User {
     gender: string;
 
     @Prop({ required: true })
-    sex: string;
+    sexuality: string;
 
     @Prop({ required: true })
     password: string;
 
     @Prop({ required: true, default: 'user' })
     role: string;
+
+    @Prop({ required: false })
+    salary: number;
 
     @Prop({ required: true, default: true })
     active: boolean;

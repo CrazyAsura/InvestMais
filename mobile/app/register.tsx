@@ -78,6 +78,8 @@ export default function RegisterScreen() {
         if (address) {
           setValue('state', address.uf);
           setValue('city', address.localidade);
+          setValue('street', address.logradouro);
+          setValue('neighborhood', address.bairro);
           setValue('country', 'Brazil'); // Default to Brazil when using ViaCEP
         }
       }
@@ -127,29 +129,34 @@ export default function RegisterScreen() {
     try {
       setIsLoading(true);
       
+      // Converter data de nascimento DD/MM/AAAA para YYYY-MM-DD
+      const [day, month, year] = data.birthDate.split('/');
+      const isoBirthDate = `${year}-${month}-${day}`;
+      
       // Mapear dados para o formato do backend
       const payload = {
         name: data.name,
         email: data.email,
         document: data.document,
-        birthDate: data.birthDate, // O backend espera Date, o Zod valida como string formatada
+        birthDate: isoBirthDate,
         gender: data.gender,
-        sex: data.sex,
+        sexuality: data.sexuality,
         password: data.password,
+        salary: data.salary ? parseFloat(data.salary.replace(/[^\d,]/g, '').replace(',', '.')) : undefined,
         address: {
           zipCode: data.cep,
-          street: '', // Poderia ser extraído do ViaCEP se disponível
+          street: data.street,
           number: data.number,
-          neighborhood: '',
+          neighborhood: data.neighborhood,
           city: data.city,
           state: data.state,
           country: data.country,
           complement: ''
         },
         phone: {
+          ddi: data.ddi.replace('+', ''),
           ddd: data.ddd,
-          number: data.phone,
-          type: 'mobile' // Valor padrão
+          number: data.phone.replace(/\D/g, ''),
         }
       };
 
@@ -300,10 +307,10 @@ export default function RegisterScreen() {
                 <Box flex={1}>
                   <Controller
                     control={control}
-                    name="sex"
+                    name="sexuality"
                     render={({ field: { onChange, value } }) => (
                       <SearchableSelect
-                        label="Sexo"
+                        label="Sexualidade"
                         value={value}
                         onSelect={onChange}
                         options={[
@@ -348,6 +355,22 @@ export default function RegisterScreen() {
                   />
                 )}
               />
+
+              <Controller
+                control={control}
+                name="confirmPassword"
+                render={({ field: { onChange, value } }) => (
+                  <FormInput
+                    label="Confirmar Senha"
+                    placeholder="Repita sua senha"
+                    value={value}
+                    onChangeText={onChange}
+                    icon="lock"
+                    secureTextEntry
+                    error={errors.confirmPassword?.message}
+                  />
+                )}
+              />
             </FormSection>
 
             <FormSection title="Endereço">
@@ -369,18 +392,51 @@ export default function RegisterScreen() {
 
               <Controller
                 control={control}
-                name="number"
+                name="street"
                 render={({ field: { onChange, value } }) => (
                   <FormInput
-                    label="Número"
-                    placeholder="123"
+                    label="Logradouro"
+                    placeholder="Rua, Avenida, etc."
                     value={value}
                     onChangeText={onChange}
-                    keyboardType="numeric"
-                    error={errors.number?.message}
+                    error={errors.street?.message}
                   />
                 )}
               />
+
+              <HStack space={2}>
+                <Box flex={1}>
+                  <Controller
+                    control={control}
+                    name="number"
+                    render={({ field: { onChange, value } }) => (
+                      <FormInput
+                        label="Número"
+                        placeholder="123"
+                        value={value}
+                        onChangeText={onChange}
+                        keyboardType="numeric"
+                        error={errors.number?.message}
+                      />
+                    )}
+                  />
+                </Box>
+                <Box flex={2}>
+                  <Controller
+                    control={control}
+                    name="neighborhood"
+                    render={({ field: { onChange, value } }) => (
+                      <FormInput
+                        label="Bairro"
+                        placeholder="Centro"
+                        value={value}
+                        onChangeText={onChange}
+                        error={errors.neighborhood?.message}
+                      />
+                    )}
+                  />
+                </Box>
+              </HStack>
 
               <Controller
                 control={control}

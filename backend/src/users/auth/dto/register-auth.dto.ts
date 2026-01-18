@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsString, IsNotEmpty, MinLength, IsDateString, IsOptional, IsIn, ValidateNested } from 'class-validator';
+import { IsEmail, IsString, IsNotEmpty, MinLength, IsDateString, IsOptional, IsIn, ValidateNested, IsNumber } from 'class-validator';
 import { Type } from 'class-transformer';
 import { CreateAddressDto } from '../../address/dto/create-address.dto';
 import { CreatePhoneDto } from '../../phone/dto/create-phone.dto';
@@ -28,15 +28,20 @@ export class RegisterAuthDto {
     @IsNotEmpty()
     gender: string;
 
-    @ApiProperty({ description: 'Sexo do usuário', example: 'M' })
+    @ApiProperty({ description: 'Sexualidade do usuário', example: 'M' })
     @IsString()
     @IsNotEmpty()
-    sex: string;
+    sexuality: string;
 
     @ApiProperty({ description: 'Senha do usuário', example: 'senha123', minLength: 6 })
     @IsString()
     @MinLength(8)
     password: string;
+
+    @ApiProperty({ description: 'Salário mensal do usuário', example: 5000.00, required: false })
+    @IsOptional()
+    @IsNumber()
+    salary?: number;
 
     @ApiProperty({ description: 'Papel do usuário', example: 'user', default: 'user' })
     @IsOptional()

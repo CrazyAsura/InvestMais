@@ -35,7 +35,7 @@ export default function BankScreen() {
     return () => clearTimeout(timer);
   }, []);
 
-  const QuickAction = ({ icon, label }: { icon: string, label: string }) => (
+  const QuickAction = ({ icon, label }: { icon: React.ComponentProps<typeof MaterialIcons>['name'], label: string }) => (
     <VStack space={2} alignItems="center" w="20%">
       <Pressable>
         <Circle size="12" bg={colorScheme === 'dark' ? 'coolGray.800' : 'coolGray.100'}>
@@ -48,7 +48,7 @@ export default function BankScreen() {
     </VStack>
   );
 
-  const TransactionItem = ({ title, date, amount, icon, isNegative }: any) => (
+  const TransactionItem = ({ title, date, amount, icon, isNegative }: { title: string, date: string, amount: string, icon: React.ComponentProps<typeof MaterialIcons>['name'], isNegative: boolean }) => (
     <HStack space={4} alignItems="center" py={4}>
       <Circle size="10" bg={colorScheme === 'dark' ? 'coolGray.800' : 'coolGray.100'}>
         <Icon as={<MaterialIcons name={icon} />} size={5} color={themeColors.icon} />

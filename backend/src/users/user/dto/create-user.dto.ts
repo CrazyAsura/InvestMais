@@ -14,11 +14,14 @@ export class CreateUserDto {
     gender: string;
 
     @ApiProperty()
-    sex: string;
+    sexuality: string;
 
     @ApiProperty()
     role: string;
     
+    @ApiProperty({ required: false })
+    salary?: number;
+
     @ApiProperty()
     password: string;
 }
