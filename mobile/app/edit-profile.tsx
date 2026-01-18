@@ -165,9 +165,31 @@ export default function EditProfileScreen() {
       
       router.back();
     } catch (err: any) {
-      const message = err.response?.data?.message || 'Erro ao atualizar perfil';
+      let errorMessage = 'Não foi possível salvar as alterações. Tente novamente.';
+      
+      if (err.response) {
+        const status = err.response.status;
+        const data = err.response.data;
+        const message = data?.message;
+
+        if (status === 409) {
+          errorMessage = 'Este e-mail já está sendo utilizado por outra conta.';
+        } else if (status === 401) {
+          errorMessage = 'Sua sessão expirou. Faça login novamente.';
+        } else if (status === 400) {
+          errorMessage = 'Os dados informados são inválidos. Verifique os campos.';
+          if (message) {
+            errorMessage = Array.isArray(message) ? message[0] : message;
+          }
+        } else if (message) {
+          errorMessage = Array.isArray(message) ? message[0] : message;
+        }
+      } else if (err.request) {
+        errorMessage = 'Erro de rede. Verifique sua conexão para salvar o perfil.';
+      }
+
       toast.show({
-        description: Array.isArray(message) ? message[0] : message,
+        description: errorMessage,
         placement: "top",
         bg: "error.500"
       });

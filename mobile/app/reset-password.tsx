@@ -57,9 +57,29 @@ export default function ResetPasswordScreen() {
 
       router.replace('/login');
     } catch (err: any) {
-      const message = err.response?.data?.message || 'Erro ao redefinir senha';
+      let errorMessage = 'Não foi possível redefinir sua senha. Tente novamente.';
+      
+      if (err.response) {
+        const status = err.response.status;
+        const data = err.response.data;
+        const message = data?.message;
+
+        if (status === 404) {
+          errorMessage = 'O e-mail informado não foi encontrado em nosso sistema.';
+        } else if (status === 400) {
+          errorMessage = 'Dados inválidos. Verifique as informações digitadas.';
+          if (message) {
+            errorMessage = Array.isArray(message) ? message[0] : message;
+          }
+        } else if (message) {
+          errorMessage = Array.isArray(message) ? message[0] : message;
+        }
+      } else if (err.request) {
+        errorMessage = 'Falha na conexão. Verifique sua internet.';
+      }
+
       toast.show({
-        description: Array.isArray(message) ? message[0] : message,
+        description: errorMessage,
         placement: "top",
         bg: "error.500"
       });

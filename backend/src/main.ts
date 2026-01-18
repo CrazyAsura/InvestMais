@@ -13,12 +13,7 @@ async function bootstrap() {
   }));
 
   app.enableCors({
-    origin: [
-      process.env.BACKEND_URL,
-      'http://localhost:8081', // Porta padrão do Expo
-      'http://localhost:19000', // Porta alternativa do Expo
-      'http://localhost:19006', // Expo Web
-    ],
+    origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });

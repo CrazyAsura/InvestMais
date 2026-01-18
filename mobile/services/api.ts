@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Platform } from 'react-native';
+import { API_URL } from '../config/api';
 
 // Importação dinâmica para evitar ciclos de dependência
 let store: any;
@@ -8,15 +8,12 @@ export const injectStore = (_store: any) => {
   store = _store;
 };
 
-const BASE_URL = Platform.OS === 'android' 
-  ? 'http://10.0.2.2:3000' 
-  : 'http://localhost:3000';
-
 const api = axios.create({
-  baseURL: BASE_URL,
+  baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 10000,
 });
 
 // Interceptor para adicionar o token em todas as requisições

@@ -173,9 +173,29 @@ export default function RegisterScreen() {
       
       router.replace('/(tabs)');
     } catch (err: any) {
-      const message = err.response?.data?.message || 'Erro ao criar conta';
+      let errorMessage = 'Ocorreu um erro ao criar sua conta. Tente novamente.';
+      
+      if (err.response) {
+        const status = err.response.status;
+        const data = err.response.data;
+        const message = data?.message;
+
+        if (status === 409) {
+          errorMessage = 'Este e-mail ou documento já está cadastrado em nossa base.';
+        } else if (status === 400) {
+          errorMessage = 'Dados inválidos. Verifique se preencheu todos os campos corretamente.';
+          if (message) {
+            errorMessage = Array.isArray(message) ? message[0] : message;
+          }
+        } else if (message) {
+          errorMessage = Array.isArray(message) ? message[0] : message;
+        }
+      } else if (err.request) {
+        errorMessage = 'Erro de conexão. Verifique sua internet para continuar o cadastro.';
+      }
+
       toast.show({
-        description: Array.isArray(message) ? message[0] : message,
+        description: errorMessage,
         placement: "top",
         bg: "error.500"
       });

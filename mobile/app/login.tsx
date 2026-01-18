@@ -61,8 +61,27 @@ export default function LoginScreen() {
       
       router.replace('/(tabs)');
     } catch (err: any) {
-      const message = err.response?.data?.message || 'Erro ao realizar login';
-      const errorMessage = Array.isArray(message) ? message[0] : message;
+      let errorMessage = 'Ocorreu um erro inesperado ao entrar. Tente novamente.';
+      
+      if (err.response) {
+        const status = err.response.status;
+        const data = err.response.data;
+        const message = data?.message;
+
+        if (status === 401) {
+          errorMessage = 'E-mail ou senha incorretos. Verifique seus dados.';
+        } else if (status === 403) {
+          errorMessage = 'Sua conta está inativa. Entre em contato com o suporte.';
+        } else if (status === 404) {
+          errorMessage = 'Usuário não encontrado. Verifique o e-mail digitado.';
+        } else if (status === 429) {
+          errorMessage = 'Muitas tentativas de login. Tente novamente mais tarde.';
+        } else if (message) {
+          errorMessage = Array.isArray(message) ? message[0] : message;
+        }
+      } else if (err.request) {
+        errorMessage = 'Não foi possível conectar ao servidor. Verifique sua internet.';
+      }
       
       dispatch(setError(errorMessage));
       toast.show({
