@@ -334,8 +334,11 @@ export default function RegisterScreen() {
                         value={value}
                         onSelect={onChange}
                         options={[
-                          { label: 'Masculino', value: 'M' },
-                          { label: 'Feminino', value: 'F' },
+                          { label: 'Heterossexual', value: 'Heterossexual' },
+                          { label: 'Homossexual', value: 'Homossexual' },
+                          { label: 'Bissexual', value: 'Bissexual' },
+                          { label: 'Panssxual', value: 'Panssxual' },
+                          { label: 'Outro', value: 'Outro' },
                         ]}
                       />
                     )}
@@ -514,7 +517,7 @@ export default function RegisterScreen() {
                         onSelect={onChange}
                         loading={isLoadingCountries}
                         options={countries.map(c => ({ 
-                          label: `${c.name} (${c.idd.root}${c.idd.suffixes?.[0] || ''})`, 
+                          label: `${c.flag} ${c.name} (${c.idd.root}${c.idd.suffixes?.[0] || ''})`, 
                           value: `${c.idd.root}${c.idd.suffixes?.[0] || ''}` 
                         }))}
                       />

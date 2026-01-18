@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
-import { AddressDocument } from './schema/address.schema';
+import { Address, AddressDocument } from './schema/address.schema';
 import { Model } from 'mongoose';
 
 @Injectable()
 export class AddressService {
-  constructor(private readonly addressModel: Model<AddressDocument>) {}
+  constructor(@InjectModel(Address.name) private readonly addressModel: Model<AddressDocument>) {}
   
   async create(createAddressDto: CreateAddressDto) {
     const createdAddress = new this.addressModel(createAddressDto);

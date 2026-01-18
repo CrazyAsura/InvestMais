@@ -29,8 +29,6 @@ const editProfileSchema = registerBaseSchema.omit({
   document: true,
   password: true,
   confirmPassword: true
-}).extend({
-  password: z.string().min(8, 'A senha deve ter pelo menos 8 caracteres').optional().or(z.literal('')),
 });
 
 type EditProfileFormData = z.infer<typeof editProfileSchema>;
@@ -148,10 +146,6 @@ export default function EditProfileScreen() {
           number: data.phone.replace(/\D/g, ''),
         }
       };
-
-      if (data.password) {
-        payload.password = data.password;
-      }
 
       const response = await api.patch('/auth/profile', payload);
       
@@ -298,12 +292,15 @@ export default function EditProfileScreen() {
                     name="sexuality"
                     render={({ field: { onChange, value } }) => (
                       <SearchableSelect
-                        label="Sexo"
+                        label="Sexualidade"
                         value={value}
                         onSelect={onChange}
                         options={[
-                          { label: 'Masculino', value: 'M' },
-                          { label: 'Feminino', value: 'F' },
+                          { label: 'Heterossexual', value: 'Heterossexual' },
+                          { label: 'Homossexual', value: 'Homossexual' },
+                          { label: 'Bissexual', value: 'Bissexual' },
+                          { label: 'Panssxual', value: 'Panssxual' },
+                          { label: 'Outro', value: 'Outro' },
                         ]}
                       />
                     )}
@@ -324,22 +321,6 @@ export default function EditProfileScreen() {
                     mask={maskCurrency}
                     keyboardType="numeric"
                     error={errors.salary?.message}
-                  />
-                )}
-              />
-
-              <Controller
-                control={control}
-                name="password"
-                render={({ field: { onChange, value } }) => (
-                  <FormInput
-                    label="Nova Senha (opcional)"
-                    placeholder="Deixe em branco para manter"
-                    value={value || ''}
-                    onChangeText={onChange}
-                    icon="lock"
-                    secureTextEntry
-                    error={errors.password?.message}
                   />
                 )}
               />
@@ -454,7 +435,7 @@ export default function EditProfileScreen() {
                         value={value}
                         onSelect={onChange}
                         options={countries.map(c => ({ 
-                          label: `${c.flag} ${c.idd.root}${c.idd.suffixes?.[0] || ''}`, 
+                          label: `${c.flag} ${c.name} (${c.idd.root}${c.idd.suffixes?.[0] || ''})`, 
                           value: `${c.idd.root}${c.idd.suffixes?.[0] || ''}` 
                         }))}
                       />

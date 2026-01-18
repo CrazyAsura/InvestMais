@@ -95,7 +95,7 @@ export class AuthService {
   } 
 
   async updateProfile(user: UserDocument, updateDto: UpdateProfileDto) {
-    const { email, password } = updateDto;
+    const { email } = updateDto;
 
     if (email && email !== user.email) {
       const emailExists = await this.userModel.findOne({ email });
@@ -105,10 +105,6 @@ export class AuthService {
     }
 
     const updateData: any = { ...updateDto };
-
-    if (password) {
-      updateData.password = await argon2.hash(password);
-    }
 
     const updatedUser = await this.userModel.findByIdAndUpdate(
       user._id,
