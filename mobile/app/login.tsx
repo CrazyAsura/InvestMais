@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useRouter } from 'expo-router';
-import { TextInput, StyleSheet } from 'react-native';
+import { TextInput, StyleSheet, Alert } from 'react-native';
 import { 
   Box, 
   Text, 
@@ -12,16 +12,25 @@ import {
   HStack, 
   Link, 
   Pressable,
-  Icon
+  Icon,
+  useToast
 } from 'native-base';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useDispatch, useSelector } from 'react-redux';
+import { setCredentials, setLoading, setError } from '@/store/slices/authSlice';
+import { RootState } from '@/store';
+import api from '@/services/api';
 
 export default function LoginScreen() {
   const router = useRouter();
+  const dispatch = useDispatch();
+  const toast = useToast();
   const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
+  
+  const { isLoading, error } = useSelector((state: RootState) => state.auth);
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -29,9 +38,44 @@ export default function LoginScreen() {
   const [isEmailFocused, setIsEmailFocused] = useState(false);
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
 
-  const handleLogin = () => {
-    console.log('Login com:', email, password);
-    router.replace('/(tabs)');
+  const handleLogin = async () => {
+    if (!email || !password) {
+      toast.show({
+        description: "Por favor, preencha todos os campos",
+        placement: "top",
+        variant: "subtle",
+        bg: "error.500"
+      });
+      return;
+    }
+
+    try {
+      dispatch(setLoading(true));
+      const response = await api.post('/auth/login', { email, password });
+      
+      const { user, token } = response.data;
+      dispatch(setCredentials({ user, token }));
+      
+      toast.show({
+        description: "Login realizado com sucesso!",
+        placement: "top",
+        variant: "subtle",
+        bg: "success.500"
+      });
+      
+      router.replace('/(tabs)');
+    } catch (err: any) {
+      const message = err.response?.data?.message || 'Erro ao realizar login';
+      dispatch(setError(message));
+      toast.show({
+        description: message,
+        placement: "top",
+        variant: "subtle",
+        bg: "error.500"
+      });
+    } finally {
+      dispatch(setLoading(false));
+    }
   };
 
   const inputBg = colorScheme === 'dark' ? '#1f2937' : '#f3f4f6'; // coolGray.800 / 100
@@ -128,6 +172,7 @@ export default function LoginScreen() {
             bg={themeColors.tint}
             _pressed={{ bg: 'amber.600' }}
             onPress={handleLogin}
+            isLoading={isLoading}
             borderRadius="xl"
             _text={{ fontWeight: 'bold', fontSize: 'md' }}
           >

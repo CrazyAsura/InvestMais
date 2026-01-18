@@ -1,72 +1,216 @@
-import { StyleSheet, TouchableOpacity } from 'react-native';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, ScrollView } from 'react-native';
+import { useRouter } from 'expo-router';
+import { 
+  Box, 
+  VStack, 
+  HStack, 
+  Text, 
+  Avatar, 
+  Pressable, 
+  Icon, 
+  Divider, 
+  Button,
+  Center,
+  useToast,
+  Skeleton,
+  Heading
+} from 'native-base';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { setCredentials, logout } from '@/store/slices/authSlice';
+import { logout } from '@/store/slices/authSlice';
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function PerfilScreen() {
+  const router = useRouter();
   const dispatch = useAppDispatch();
+  const toast = useToast();
+  const colorScheme = useColorScheme() ?? 'light';
+  const themeColors = Colors[colorScheme];
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleLogin = () => {
-    dispatch(
-      setCredentials({
-        user: { name: 'Usuário Teste', email: 'teste@investmais.com' },
-        token: 'token-fake-123',
-      })
-    );
-  };
+  useEffect(() => {
+    // Simular carregamento de dados do perfil
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleLogout = () => {
     dispatch(logout());
+    toast.show({
+      description: "Sessão encerrada",
+      placement: "top",
+      bg: "info.500"
+    });
+    router.replace('/login');
   };
 
+  const handleEditProfile = () => {
+    router.push('/edit-profile');
+  };
+
+  if (isLoading) {
+    return (
+      <ScrollView style={{ flex: 1, backgroundColor: themeColors.background }}>
+        <VStack space={6} p="6" pb="12">
+          <Center>
+            <Skeleton size="32" rounded="full" />
+            <VStack mt="4" alignItems="center" space={2}>
+              <Skeleton h="6" w="48" rounded="full" />
+              <Skeleton h="4" w="32" rounded="full" />
+            </VStack>
+          </Center>
+
+          <Box bg={colorScheme === 'dark' ? 'coolGray.900' : 'white'} p="4" borderRadius="2xl" shadow={2}>
+            <Skeleton h="6" w="32" mb="4" rounded="full" />
+            <VStack space={4}>
+              {[1, 2, 3, 4].map(i => (
+                <HStack key={i} space={4} alignItems="center">
+                  <Skeleton size="10" rounded="full" />
+                  <VStack flex={1} space={2}>
+                    <Skeleton h="3" w="24" rounded="full" />
+                    <Skeleton h="4" w="48" rounded="full" />
+                  </VStack>
+                </HStack>
+              ))}
+            </VStack>
+          </Box>
+
+          <VStack space={3} mt="4">
+            <Skeleton h="12" w="100%" rounded="lg" />
+            <Skeleton h="12" w="100%" rounded="lg" />
+          </VStack>
+        </VStack>
+      </ScrollView>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <Center flex={1} bg={themeColors.background} px="6">
+        <VStack space={4} alignItems="center">
+          <Icon as={<MaterialIcons name="account-circle" />} size={20} color={themeColors.icon} />
+          <Text fontSize="xl" fontWeight="bold" color={themeColors.text}>
+            Você não está logado
+          </Text>
+          <Button 
+            onPress={() => router.push('/login')}
+            bg={themeColors.tint}
+            px="8"
+          >
+            Fazer Login
+          </Button>
+        </VStack>
+      </Center>
+    );
+  }
+
+  const InfoRow = ({ icon, label, value }: { icon: string, label: string, value?: string }) => (
+    <HStack space={4} alignItems="center" py={3}>
+      <Box p="2" borderRadius="full" bg={colorScheme === 'dark' ? 'coolGray.800' : 'coolGray.100'}>
+        <Icon as={<MaterialIcons name={icon as any} />} size={5} color={themeColors.tint} />
+      </Box>
+      <VStack flex={1}>
+        <Text fontSize="xs" color={themeColors.icon} fontWeight="medium">
+          {label}
+        </Text>
+        <Text fontSize="md" color={themeColors.text} fontWeight="bold">
+          {value || 'Não informado'}
+        </Text>
+      </VStack>
+    </HStack>
+  );
+
   return (
-    <ThemedView style={styles.container}>
-      <ThemedText type="title">Perfil</ThemedText>
-      
-      {isAuthenticated ? (
-        <ThemedView style={styles.infoContainer}>
-          <ThemedText>Bem-vindo, {user?.name}!</ThemedText>
-          <ThemedText>{user?.email}</ThemedText>
-          <TouchableOpacity style={styles.buttonLogout} onPress={handleLogout}>
-            <ThemedText style={styles.buttonText}>Sair</ThemedText>
-          </TouchableOpacity>
-        </ThemedView>
-      ) : (
-        <TouchableOpacity style={styles.buttonLogin} onPress={handleLogin}>
-          <ThemedText style={styles.buttonText}>Simular Login (Redux)</ThemedText>
-        </TouchableOpacity>
-      )}
-    </ThemedView>
+    <ScrollView style={{ flex: 1, backgroundColor: themeColors.background }}>
+      <VStack space={6} p="6" pb="12">
+        <Center>
+          <Avatar 
+            size="2xl" 
+            bg={themeColors.tint}
+            _text={{ fontSize: '3xl', fontWeight: 'bold' }}
+          >
+            {user?.name?.charAt(0).toUpperCase() || 'U'}
+          </Avatar>
+          <VStack mt="4" alignItems="center">
+            <Heading size="lg" color={themeColors.text}>{user?.name}</Heading>
+            <Text color={themeColors.icon}>{user?.email}</Text>
+          </VStack>
+        </Center>
+
+        <Box 
+          bg={colorScheme === 'dark' ? 'coolGray.900' : 'white'} 
+          p="4" 
+          borderRadius="2xl" 
+          shadow={2}
+        >
+          <Text fontSize="lg" fontWeight="bold" color={themeColors.text} mb="4">
+            Dados Pessoais
+          </Text>
+          <VStack space={2}>
+            <InfoRow icon="person" label="Nome" value={user?.name} />
+            <Divider />
+            <InfoRow icon="email" label="E-mail" value={user?.email} />
+            <Divider />
+            <InfoRow icon="badge" label="CPF/CNPJ" value={user?.document} />
+            <Divider />
+            <InfoRow icon="cake" label="Data de Nascimento" value={user?.birthDate ? new Date(user.birthDate).toLocaleDateString() : undefined} />
+          </VStack>
+        </Box>
+
+        <Box 
+          bg={colorScheme === 'dark' ? 'coolGray.900' : 'white'} 
+          p="4" 
+          borderRadius="2xl" 
+          shadow={2}
+        >
+          <Text fontSize="lg" fontWeight="bold" color={themeColors.text} mb="4">
+            Contato e Endereço
+          </Text>
+          <VStack space={2}>
+            <InfoRow 
+              icon="phone" 
+              label="Telefone" 
+              value={user?.phone ? `(${user.phone.ddd}) ${user.phone.number}` : undefined} 
+            />
+            <Divider />
+            <InfoRow 
+              icon="location-on" 
+              label="Endereço" 
+              value={user?.address ? `${user.address.city} - ${user.address.state}` : undefined} 
+            />
+          </VStack>
+        </Box>
+
+        <VStack space={3} mt="4">
+          <Button 
+            size="lg" 
+            variant="outline" 
+            borderColor={themeColors.tint}
+            _text={{ color: themeColors.tint, fontWeight: 'bold' }}
+            leftIcon={<Icon as={<MaterialIcons name="edit" />} size="sm" />}
+            onPress={handleEditProfile}
+          >
+            Editar Perfil
+          </Button>
+          
+          <Button 
+            size="lg" 
+            variant="ghost" 
+            colorScheme="danger"
+            _text={{ fontWeight: 'bold' }}
+            leftIcon={<Icon as={<MaterialIcons name="logout" />} size="sm" />}
+            onPress={handleLogout}
+          >
+            Sair da Conta
+          </Button>
+        </VStack>
+      </VStack>
+    </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
-  },
-  infoContainer: {
-    marginTop: 20,
-    alignItems: 'center',
-  },
-  buttonLogin: {
-    marginTop: 20,
-    backgroundColor: '#007AFF',
-    padding: 15,
-    borderRadius: 8,
-  },
-  buttonLogout: {
-    marginTop: 20,
-    backgroundColor: '#FF3B30',
-    padding: 15,
-    borderRadius: 8,
-  },
-  buttonText: {
-    color: '#FFF',
-    fontWeight: 'bold',
-  },
-});

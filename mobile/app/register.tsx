@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { ScrollView, Center, Box, VStack, Heading, Text, Button, HStack, Link, Icon } from 'native-base';
+import { ScrollView, Center, Box, VStack, Heading, Text, Button, HStack, Link, Icon, useToast } from 'native-base';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useDispatch } from 'react-redux';
 
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -17,11 +18,16 @@ import { getAddressByCEP } from '@/services/viacep';
 import { getStates, getCitiesByState } from '@/services/ibge';
 import { getCountries } from '@/services/country';
 import { getDDDsByCountry } from '@/services/ddd';
+import api from '@/services/api';
+import { setCredentials } from '@/store/slices/authSlice';
 
 export default function RegisterScreen() {
   const router = useRouter();
+  const dispatch = useDispatch();
+  const toast = useToast();
   const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
     control,
@@ -117,9 +123,58 @@ export default function RegisterScreen() {
     }
   }, [selectedDDI, countries.length]); // Only trigger when DDI changes or list loads
 
-  const onSubmit = (data: RegisterFormData) => {
-    console.log('Dados do Registro:', data);
-    router.replace('/(tabs)');
+  const onSubmit = async (data: RegisterFormData) => {
+    try {
+      setIsLoading(true);
+      
+      // Mapear dados para o formato do backend
+      const payload = {
+        name: data.name,
+        email: data.email,
+        document: data.document,
+        birthDate: data.birthDate, // O backend espera Date, o Zod valida como string formatada
+        gender: data.gender,
+        sex: data.sex,
+        password: data.password,
+        address: {
+          zipCode: data.cep,
+          street: '', // Poderia ser extraído do ViaCEP se disponível
+          number: data.number,
+          neighborhood: '',
+          city: data.city,
+          state: data.state,
+          country: data.country,
+          complement: ''
+        },
+        phone: {
+          ddd: data.ddd,
+          number: data.phone,
+          type: 'mobile' // Valor padrão
+        }
+      };
+
+      const response = await api.post('/auth/register', payload);
+      const { user, token } = response.data;
+      
+      dispatch(setCredentials({ user, token }));
+      
+      toast.show({
+        description: "Conta criada com sucesso!",
+        placement: "top",
+        bg: "success.500"
+      });
+      
+      router.replace('/(tabs)');
+    } catch (err: any) {
+      const message = err.response?.data?.message || 'Erro ao criar conta';
+      toast.show({
+        description: Array.isArray(message) ? message[0] : message,
+        placement: "top",
+        bg: "error.500"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -277,6 +332,22 @@ export default function RegisterScreen() {
                   />
                 )}
               />
+
+              <Controller
+                control={control}
+                name="password"
+                render={({ field: { onChange, value } }) => (
+                  <FormInput
+                    label="Senha"
+                    placeholder="Sua senha"
+                    value={value}
+                    onChangeText={onChange}
+                    icon="lock"
+                    secureTextEntry
+                    error={errors.password?.message}
+                  />
+                )}
+              />
             </FormSection>
 
             <FormSection title="Endereço">
@@ -415,6 +486,7 @@ export default function RegisterScreen() {
               bg={themeColors.tint}
               _pressed={{ bg: 'amber.600' }}
               onPress={handleSubmit(onSubmit)}
+              isLoading={isLoading}
               borderRadius="xl"
               _text={{ fontWeight: 'bold', fontSize: 'md' }}
             >

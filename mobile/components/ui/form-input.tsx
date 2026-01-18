@@ -16,6 +16,8 @@ interface FormInputProps {
   keyboardType?: 'default' | 'email-address' | 'numeric' | 'phone-pad';
   secureTextEntry?: boolean;
   rightElement?: React.ReactNode;
+  editable?: boolean;
+  bg?: string;
 }
 
 export const FormInput = ({
@@ -29,6 +31,8 @@ export const FormInput = ({
   keyboardType = 'default',
   secureTextEntry = false,
   rightElement,
+  editable = true,
+  bg,
 }: FormInputProps) => {
   const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
@@ -53,12 +57,13 @@ export const FormInput = ({
         </Text>
         <HStack
           alignItems="center"
-          bg={isFocused ? inputBgFocus : inputBg}
+          bg={bg || (isFocused ? inputBgFocus : inputBg)}
           borderWidth={1}
           borderColor={error ? 'red.500' : isFocused ? themeColors.tint : 'transparent'}
           borderRadius="md"
           px="2"
           height="12"
+          opacity={editable ? 1 : 0.7}
         >
           {icon && (
             // @ts-ignore
@@ -74,6 +79,7 @@ export const FormInput = ({
             onBlur={() => setIsFocused(false)}
             keyboardType={keyboardType}
             secureTextEntry={secureTextEntry}
+            editable={editable}
           />
           {rightElement}
         </HStack>

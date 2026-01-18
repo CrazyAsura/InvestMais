@@ -5,7 +5,33 @@ import 'react-native-reanimated';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { NativeBaseProvider, extendTheme } from 'native-base';
-import { Platform } from 'react-native';
+import { Platform, BackHandler } from 'react-native';
+
+// Polyfill para BackHandler.removeEventListener (removido no React Native 0.73+)
+// Necessário para compatibilidade com a biblioteca NativeBase
+if (Platform.OS !== 'web' && BackHandler && !(BackHandler as any).removeEventListener) {
+  const originalAddEventListener = BackHandler.addEventListener;
+  const handlers = new Map();
+
+  // @ts-ignore
+  BackHandler.addEventListener = (eventName, handler) => {
+    const subscription = originalAddEventListener(eventName, handler);
+    handlers.set(handler, subscription);
+    return subscription;
+  };
+
+  // @ts-ignore
+  BackHandler.removeEventListener = (eventName, handler) => {
+    const subscription = handlers.get(handler);
+    if (subscription) {
+      subscription.remove();
+      handlers.delete(handler);
+    } else {
+      // Caso o handler não esteja no mapa, tentamos apenas um log ou ignoramos
+      // Algumas bibliotecas podem tentar remover um listener que nunca foi adicionado via nosso polyfill
+    }
+  };
+}
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { store, persistor } from '../store';
@@ -45,6 +71,7 @@ export default function RootLayout() {
                 <Stack initialRouteName='login'>
                   <Stack.Screen name="login" options={{ headerShown: false }} />
                   <Stack.Screen name="register" options={{ headerShown: false }} />
+                  <Stack.Screen name="edit-profile" options={{ headerShown: false }} />
                   <Stack.Screen name="reset-password" options={{ headerShown: false }} />
                   <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                   <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />

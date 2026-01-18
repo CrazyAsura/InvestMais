@@ -22,6 +22,7 @@ export const registerSchema = z.object({
   ddi: z.string().min(1, 'DDI é obrigatório'),
   ddd: z.string().min(2, 'DDD é obrigatório'),
   phone: z.string().min(8, 'Telefone inválido'),
+  password: z.string().min(6, 'A senha deve ter pelo menos 6 caracteres'),
 });
 
 export type RegisterFormData = z.infer<typeof registerSchema>;
