@@ -1,5 +1,5 @@
 import React from 'react';
-import { TextInput, StyleSheet } from 'react-native';
+import { TextInput, StyleSheet, DimensionValue } from 'react-native';
 import { FormControl, HStack, Icon, Text, VStack, Pressable } from 'native-base';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/theme';
@@ -20,6 +20,9 @@ interface FormInputProps {
   bg?: string;
   autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
   autoCorrect?: boolean;
+  multiline?: boolean;
+  numberOfLines?: number;
+  height?: number | string;
 }
 
 export const FormInput = ({
@@ -37,6 +40,9 @@ export const FormInput = ({
   bg,
   autoCapitalize,
   autoCorrect,
+  multiline = false,
+  numberOfLines,
+  height,
 }: FormInputProps) => {
   const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
@@ -61,21 +67,29 @@ export const FormInput = ({
           {label}
         </Text>
         <HStack
-          alignItems="center"
+          alignItems={multiline ? "flex-start" : "center"}
           bg={bg || (isFocused ? inputBgFocus : inputBg)}
           borderWidth={1}
           borderColor={error ? 'red.500' : isFocused ? themeColors.tint : 'transparent'}
           borderRadius="md"
           px="2"
-          height="12"
+          height={(height as any) || (multiline ? "auto" : "12")}
           opacity={editable ? 1 : 0.7}
+          pt={multiline ? 2 : 0}
         >
           {icon && (
             // @ts-ignore
-            <Icon as={<MaterialIcons name={icon} />} size={5} color={themeColors.icon} />
+            <Icon as={<MaterialIcons name={icon} />} size={5} color={themeColors.icon} mt={multiline ? 1 : 0} />
           )}
           <TextInput
-            style={[styles.input, { color: themeColors.text }]}
+            style={[
+              styles.input, 
+              { 
+                color: themeColors.text,
+                height: (multiline ? (height ?? 100) : '100%') as DimensionValue,
+                textAlignVertical: (multiline ? 'top' : 'center') as 'top' | 'center' | 'bottom' | 'auto' | undefined
+              }
+            ]}
             placeholder={placeholder}
             placeholderTextColor={themeColors.icon}
             value={value || ''}
@@ -87,6 +101,8 @@ export const FormInput = ({
             editable={editable}
             autoCapitalize={autoCapitalize}
             autoCorrect={autoCorrect}
+            multiline={multiline}
+            numberOfLines={numberOfLines}
           />
           {secureTextEntry && (
             <Pressable onPress={() => setShowPassword(!showPassword)} p="2">

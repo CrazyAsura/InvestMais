@@ -10,6 +10,7 @@ import { PhoneModule } from './users/phone/phone.module';
 import { TokenModule } from './users/token/token.module';
 import { AdminModule } from './users/admin/admin.module';
 import { ActivityLogModule } from './monitoring/activity-log/activity-log.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 
@@ -32,6 +33,7 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
     TokenModule,
     AdminModule,
     ActivityLogModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [

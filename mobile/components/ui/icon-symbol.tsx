@@ -26,6 +26,7 @@ const MAPPING = {
   'gearshape.fill': 'settings',
   'sun.max.fill': 'wb-sunny',
   'moon.stars.fill': 'nightlight-round',
+  'bell.fill': 'notifications',
 } as IconMapping;
 
 /**

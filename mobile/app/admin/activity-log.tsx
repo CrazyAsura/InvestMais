@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { StyleSheet, FlatList, RefreshControl } from 'react-native';
+import { StyleSheet, FlatList, RefreshControl, TextInput } from 'react-native';
 import { 
   Box, 
   VStack, 
   HStack, 
   Text, 
-  Input, 
   Icon, 
   Select, 
   CheckIcon, 
@@ -15,13 +14,17 @@ import {
   Badge,
   Divider,
   Pressable,
-  useToast
+  useToast,
+  Center,
+  useColorModeValue
 } from 'native-base';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import api from '@/services/api';
+import { AdminHeader } from '@/components/admin/AdminHeader';
+import { AdminSidebar } from '@/components/admin/AdminSidebar';
 
 interface ActivityLog {
   _id: string;
@@ -53,6 +56,7 @@ export default function ActivityLogScreen() {
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
   // Filters
   const [search, setSearch] = useState('');
@@ -112,142 +116,165 @@ export default function ActivityLogScreen() {
     }
   };
 
+  const cardBg = useColorModeValue('white', 'coolGray.900');
+  const inputBg = useColorModeValue('coolGray.100', 'coolGray.800');
+  const textColor = useColorModeValue('coolGray.800', 'white');
+  const subTextColor = useColorModeValue('coolGray.500', 'coolGray.400');
+
   const renderLogItem = ({ item }: { item: ActivityLog }) => (
     <Box 
-      bg={colorScheme === 'dark' ? 'coolGray.900' : 'white'} 
+      bg={cardBg} 
       p="4" 
       mx="4" 
       my="2" 
-      borderRadius="xl" 
+      borderRadius="2xl" 
       shadow={1}
+      borderWidth={1}
+      borderColor={useColorModeValue('coolGray.50', 'coolGray.800')}
     >
-      <VStack space={2}>
+      <VStack space={3}>
         <HStack justifyContent="space-between" alignItems="center">
-          <VStack>
-            <Text fontWeight="bold" fontSize="md" color={themeColors.text}>
-              {item.userName}
-            </Text>
-            <Text fontSize="xs" color={themeColors.icon}>
-              {item.userEmail}
-            </Text>
-          </VStack>
+          <HStack space={3} alignItems="center">
+            <Box p={2} borderRadius="full" bg="coolGray.100" _dark={{ bg: 'coolGray.800' }}>
+              <Icon as={<MaterialIcons name="person" />} size={5} color={themeColors.tint} />
+            </Box>
+            <VStack>
+              <Text fontWeight="bold" fontSize="md" color={textColor}>
+                {item.userName}
+              </Text>
+              <Text fontSize="xs" color={subTextColor}>
+                {item.userEmail}
+              </Text>
+            </VStack>
+          </HStack>
           <Badge 
-            colorScheme={item.userRole === 'admin' ? 'error' : 'info'} 
+            colorScheme={item.userRole === 'admin' ? 'danger' : 'info'} 
             variant="subtle" 
-            rounded="full"
+            rounded="lg"
+            px={2}
           >
             {item.userRole.toUpperCase()}
           </Badge>
         </HStack>
 
-        <Divider />
+        <Divider opacity={0.5} />
 
-        <HStack space={2} alignItems="center">
-          <Icon as={<MaterialIcons name="bolt" />} size="sm" color={themeColors.tint} />
-          <Text fontWeight="medium" flex={1} color={themeColors.text}>
-            {item.action}
-          </Text>
+        <HStack justifyContent="space-between" alignItems="center">
+          <HStack space={2} alignItems="center" flex={1}>
+            <Box p={1.5} borderRadius="md" bg="primary.50" _dark={{ bg: 'primary.900' }}>
+              <Icon as={<MaterialIcons name="bolt" />} size={4} color={themeColors.tint} />
+            </Box>
+            <Text fontWeight="semibold" fontSize="sm" color={textColor} numberOfLines={1}>
+              {item.action}
+            </Text>
+          </HStack>
+          <Badge variant="outline" colorScheme="coolGray" rounded="md">
+            {item.method}
+          </Badge>
         </HStack>
 
-        <HStack space={4}>
-          <VStack flex={1}>
-            <HStack space={1} alignItems="center">
-              <Icon as={<MaterialIcons name="lan" />} size="xs" color="coolGray.400" />
-              <Text fontSize="xs" color="coolGray.400">IP: {item.ip}</Text>
-            </HStack>
-            <HStack space={1} alignItems="center">
-              <Icon as={<MaterialIcons name="schedule" />} size="xs" color="coolGray.400" />
-              <Text fontSize="xs" color="coolGray.400">
-                {new Date(item.createdAt).toLocaleString()}
-              </Text>
-            </HStack>
-          </VStack>
-          <VStack alignItems="flex-end">
-             <Badge variant="outline" colorScheme="coolGray">
-               {item.method}
-             </Badge>
-          </VStack>
+        <HStack justifyContent="space-between" alignItems="center">
+          <HStack space={1} alignItems="center">
+            <Icon as={<MaterialIcons name="lan" />} size="xs" color={subTextColor} />
+            <Text fontSize="xs" color={subTextColor}>{item.ip}</Text>
+          </HStack>
+          <HStack space={1} alignItems="center">
+            <Icon as={<MaterialIcons name="schedule" />} size="xs" color={subTextColor} />
+            <Text fontSize="xs" color={subTextColor}>
+              {new Date(item.createdAt).toLocaleString()}
+            </Text>
+          </HStack>
         </HStack>
       </VStack>
     </Box>
   );
 
   return (
-    <Box flex={1} bg={themeColors.background} safeAreaTop>
-      <VStack space={4} pb={4}>
-        <HStack px="4" pt="2" alignItems="center" space={2}>
-          <IconButton 
-            icon={<Icon as={<MaterialIcons name="arrow-back" />} size="md" color={themeColors.text} />}
-            onPress={() => router.back()}
-          />
-          <Heading size="md" color={themeColors.text}>Monitoramento</Heading>
-        </HStack>
-
-        <VStack px="4" space={3}>
-          <Input 
-            placeholder="Pesquisar por nome, email ou ação..." 
-            width="100%" 
-            borderRadius="xl" 
-            py="3" 
-            px="4" 
-            fontSize="md"
-            InputLeftElement={<Icon as={<MaterialIcons name="search" />} size="5" ml="3" color="coolGray.400" />}
-            value={search}
-            onChangeText={setSearch}
-            bg={colorScheme === 'dark' ? 'coolGray.800' : 'coolGray.100'}
-            borderWidth={0}
-          />
-
-          <HStack space={2}>
-            <Select 
-              flex={1}
-              selectedValue={role} 
-              placeholder="Cargo" 
-              _selectedItem={{
-                bg: "teal.600",
-                endIcon: <CheckIcon size="5" />
-              }} 
-              mt={1} 
-              onValueChange={itemValue => setRole(itemValue)}
-              bg={colorScheme === 'dark' ? 'coolGray.800' : 'coolGray.100'}
-              borderWidth={0}
-              borderRadius="xl"
-            >
-              <Select.Item label="Todos Cargos" value="" />
-              <Select.Item label="Admin" value="admin" />
-              <Select.Item label="Usuário" value="user" />
-            </Select>
-
-            <Select 
-              flex={1}
-              selectedValue={action} 
-              placeholder="Ação" 
-              _selectedItem={{
-                bg: "teal.600",
-                endIcon: <CheckIcon size="5" />
-              }} 
-              mt={1} 
-              onValueChange={itemValue => setAction(itemValue)}
-              bg={colorScheme === 'dark' ? 'coolGray.800' : 'coolGray.100'}
-              borderWidth={0}
-              borderRadius="xl"
-            >
-              <Select.Item label="Todas Ações" value="" />
-              <Select.Item label="Login" value="Login" />
-              <Select.Item label="Criar" value="Criar" />
-              <Select.Item label="Atualizar" value="Atualizar" />
-              <Select.Item label="Deletar" value="Deletar" />
-            </Select>
-          </HStack>
-        </VStack>
-      </VStack>
-
+    <Box flex={1} bg={useColorModeValue('coolGray.50', 'black')}>
+      <AdminHeader title="Histórico" onMenuPress={() => setIsSidebarOpen(true)} />
+      <AdminSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      
       <FlatList 
         data={logs}
         keyExtractor={item => item._id}
         renderItem={renderLogItem}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: 20 }}
+        ListHeaderComponent={
+          <VStack space={4} pt={4} pb={2}>
+            <VStack px="4" space={3}>
+              <HStack 
+                bg={inputBg}
+                borderRadius="2xl"
+                alignItems="center"
+                px={4}
+                height={12}
+                borderWidth={1}
+                borderColor={useColorModeValue('coolGray.200', 'coolGray.700')}
+              >
+                <Icon as={<MaterialIcons name="search" />} size="5" color={subTextColor} />
+                <TextInput 
+                  placeholder="Pesquisar..." 
+                  placeholderTextColor={subTextColor === 'coolGray.500' ? '#9ca3af' : '#6b7280'}
+                  style={{ 
+                    flex: 1,
+                    marginLeft: 8,
+                    color: textColor,
+                    fontSize: 15
+                  }}
+                  value={search}
+                  onChangeText={setSearch}
+                />
+              </HStack>
+
+              <HStack space={2}>
+                <Select 
+                  flex={1}
+                  selectedValue={role} 
+                  placeholder="Cargo" 
+                  _selectedItem={{
+                    bg: themeColors.tint,
+                    endIcon: <CheckIcon size="5" color="white" />
+                  }} 
+                  onValueChange={itemValue => setRole(itemValue)}
+                  bg={inputBg}
+                  borderWidth={1}
+                  borderColor={useColorModeValue('coolGray.200', 'coolGray.700')}
+                  borderRadius="xl"
+                  h={10}
+                >
+                  <Select.Item label="Todos Cargos" value="" />
+                  <Select.Item label="Admin" value="admin" />
+                  <Select.Item label="Usuário" value="user" />
+                </Select>
+
+                <Select 
+                  flex={1}
+                  selectedValue={action} 
+                  placeholder="Ação" 
+                  _selectedItem={{
+                    bg: themeColors.tint,
+                    endIcon: <CheckIcon size="5" color="white" />
+                  }} 
+                  onValueChange={itemValue => setAction(itemValue)}
+                  bg={inputBg}
+                  borderWidth={1}
+                  borderColor={useColorModeValue('coolGray.200', 'coolGray.700')}
+                  borderRadius="xl"
+                  h={10}
+                >
+                  <Select.Item label="Todas Ações" value="" />
+                  <Select.Item label="Login" value="Login" />
+                  <Select.Item label="Criar" value="Criar" />
+                  <Select.Item label="Atualizar" value="Atualizar" />
+                  <Select.Item label="Deletar" value="Deletar" />
+                </Select>
+              </HStack>
+            </VStack>
+          </VStack>
+        }
         refreshControl={
           <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} tintColor={themeColors.tint} />
         }
@@ -258,8 +285,8 @@ export default function ActivityLogScreen() {
             </Center>
           ) : meta && meta.total === 0 ? (
             <Center py="20">
-              <Icon as={<MaterialIcons name="search-off" />} size={12} color="coolGray.400" mb="2" />
-              <Text color="coolGray.400">Nenhum registro encontrado</Text>
+              <Icon as={<MaterialIcons name="search-off" />} size={12} color={subTextColor} mb="2" />
+              <Text color={subTextColor}>Nenhum registro encontrado</Text>
             </Center>
           ) : null
         }

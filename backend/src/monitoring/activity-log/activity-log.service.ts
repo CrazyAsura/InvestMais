@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, FilterQuery } from 'mongoose';
+import { Model } from 'mongoose';
 import { ActivityLog, ActivityLogDocument } from './schema/activity-log.schema';
 import { QueryActivityLogDto } from './dto/query-activity-log.dto';
 
@@ -19,7 +19,7 @@ export class ActivityLogService {
         const { page = 1, limit = 10, search, role, action, startDate, endDate } = queryDto;
         const skip = (page - 1) * limit;
 
-        const filters: FilterQuery<ActivityLogDocument> = {};
+        const filters: any = {};
 
         if (search) {
             filters.$or = [

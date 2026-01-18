@@ -52,12 +52,21 @@ export function TopBar() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background, borderBottomColor: colors.icon + '33' }]}>
-      <TouchableOpacity 
-        onPress={() => router.push('/modal')} 
-        style={styles.iconButton}
-      >
-        <IconSymbol name="gearshape.fill" size={24} color={colors.text} />
-      </TouchableOpacity>
+      <View style={styles.leftIcons}>
+        <TouchableOpacity 
+          onPress={() => router.push('/modal')} 
+          style={styles.iconButton}
+        >
+          <IconSymbol name="gearshape.fill" size={24} color={colors.text} />
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          onPress={() => router.push('/notifications')} 
+          style={styles.iconButton}
+        >
+          <IconSymbol name="bell.fill" size={24} color={colors.text} />
+        </TouchableOpacity>
+      </View>
 
       <TouchableOpacity onPress={toggleTheme} style={styles.themeToggle}>
         <View style={styles.iconContainer}>
@@ -81,6 +90,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     borderBottomWidth: 1,
+  },
+  leftIcons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
   },
   iconButton: {
     padding: 8,
