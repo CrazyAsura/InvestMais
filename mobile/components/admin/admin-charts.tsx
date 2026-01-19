@@ -4,18 +4,18 @@ import { Box, VStack, Heading, useColorModeValue } from 'native-base';
 import { Dimensions } from 'react-native';
 import { LineChart, BarChart } from 'react-native-gifted-charts';
 
-export const AdminCharts = () => {
+export const AdminCharts = ({ data }: { data?: any[] }) => {
   const cardBg = useColorModeValue('white', 'coolGray.800');
   const textColor = useColorModeValue('#1f2937', '#f3f4f6');
   const screenWidth = Dimensions.get('window').width;
 
-  const data = [
-    { label: 'Jan', users: 400, actions: 240 },
-    { label: 'Fev', users: 300, actions: 139 },
-    { label: 'Mar', users: 200, actions: 980 },
-    { label: 'Abr', users: 278, actions: 390 },
-    { label: 'Mai', users: 189, actions: 480 },
-  ];
+  if (!data || data.length === 0) {
+    return (
+      <Box bg={cardBg} p={10} borderRadius="xl" shadow={2} alignItems="center">
+        <Heading size="xs" color="gray.400">Nenhum dado disponível para exibir gráficos</Heading>
+      </Box>
+    );
+  }
 
   const usersLineData = data.map(item => ({
     value: item.users,

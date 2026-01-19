@@ -58,4 +58,9 @@ export class RegisterAuthDto {
     @ValidateNested()
     @Type(() => CreatePhoneDto)
     phone: CreatePhoneDto;
+
+    @ApiProperty({ description: 'URL da imagem de perfil', required: false })
+    @IsOptional()
+    @IsString()
+    imageUrl?: string;
 }

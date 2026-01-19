@@ -43,6 +43,12 @@ export default function AdminLayout() {
           title: 'Gerenciamento de Notificações'
         }} 
       />
+      <Stack.Screen 
+        name="employees/index" 
+        options={{ 
+          title: 'Gestão de Funcionários'
+        }} 
+      />
     </Stack>
   );
 }

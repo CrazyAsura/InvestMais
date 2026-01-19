@@ -20,6 +20,9 @@ export class CreateUserDto {
     role: string;
     
     @ApiProperty({ required: false })
+    sector?: string;
+    
+    @ApiProperty({ required: false })
     salary?: number;
 
     @ApiProperty()

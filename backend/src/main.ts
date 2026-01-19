@@ -13,7 +13,15 @@ async function bootstrap() {
   }));
 
   app.enableCors({
-    origin: '*',
+    origin: [
+      'http://localhost:3000',
+      'http://localhost:8081',
+      'http://127.0.0.1:3000',
+      'http://127.0.0.1:8081',
+      'http://192.168.0.105:3000',
+      'http://192.168.0.105:8081',
+      'https://investmais-2wuu.onrender.com',
+    ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });

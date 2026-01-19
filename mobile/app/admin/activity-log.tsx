@@ -46,6 +46,81 @@ interface PaginationMeta {
   totalPages: number;
 }
 
+const LogItem = React.memo(({ item, themeColors }: { item: ActivityLog, themeColors: any }) => {
+  const cardBg = useColorModeValue('white', 'coolGray.900');
+  const textColor = useColorModeValue('coolGray.800', 'white');
+  const subTextColor = useColorModeValue('coolGray.500', 'coolGray.400');
+  const borderColor = useColorModeValue('coolGray.50', 'coolGray.800');
+
+  return (
+    <Box 
+      bg={cardBg} 
+      p="4" 
+      mx="4" 
+      my="2" 
+      borderRadius="2xl" 
+      shadow={1}
+      borderWidth={1}
+      borderColor={borderColor}
+    >
+      <VStack space={3}>
+        <HStack justifyContent="space-between" alignItems="center">
+          <HStack space={3} alignItems="center">
+            <Box p={2} borderRadius="full" bg="coolGray.100" _dark={{ bg: 'coolGray.800' }}>
+              <Icon as={<MaterialIcons name="person" />} size={5} color={themeColors.tint} />
+            </Box>
+            <VStack>
+              <Text fontWeight="bold" fontSize="md" color={textColor}>
+                {item.userName}
+              </Text>
+              <Text fontSize="xs" color={subTextColor}>
+                {item.userEmail}
+              </Text>
+            </VStack>
+          </HStack>
+          <Badge 
+            colorScheme={item.userRole === 'admin' ? 'danger' : 'info'} 
+            variant="subtle" 
+            rounded="lg"
+            px={2}
+          >
+            {item.userRole.toUpperCase()}
+          </Badge>
+        </HStack>
+
+        <Divider opacity={0.5} />
+
+        <HStack justifyContent="space-between" alignItems="center">
+          <HStack space={2} alignItems="center" flex={1}>
+            <Box p={1.5} borderRadius="md" bg="primary.50" _dark={{ bg: 'primary.900' }}>
+              <Icon as={<MaterialIcons name="bolt" />} size={4} color={themeColors.tint} />
+            </Box>
+            <Text fontWeight="semibold" fontSize="sm" color={textColor} numberOfLines={1}>
+              {item.action}
+            </Text>
+          </HStack>
+          <Badge variant="outline" colorScheme="coolGray" rounded="md">
+            {item.method}
+          </Badge>
+        </HStack>
+
+        <HStack justifyContent="space-between" alignItems="center">
+          <HStack space={1} alignItems="center">
+            <Icon as={<MaterialIcons name="lan" />} size="xs" color={subTextColor} />
+            <Text fontSize="xs" color={subTextColor}>{item.ip}</Text>
+          </HStack>
+          <HStack space={1} alignItems="center">
+            <Icon as={<MaterialIcons name="schedule" />} size="xs" color={subTextColor} />
+            <Text fontSize="xs" color={subTextColor}>
+              {new Date(item.createdAt).toLocaleString()}
+            </Text>
+          </HStack>
+        </HStack>
+      </VStack>
+    </Box>
+  );
+});
+
 export default function ActivityLogScreen() {
   const router = useRouter();
   const toast = useToast();
@@ -116,81 +191,18 @@ export default function ActivityLogScreen() {
     }
   };
 
-  const cardBg = useColorModeValue('white', 'coolGray.900');
   const inputBg = useColorModeValue('coolGray.100', 'coolGray.800');
   const textColor = useColorModeValue('coolGray.800', 'white');
   const subTextColor = useColorModeValue('coolGray.500', 'coolGray.400');
+  const headerBorderColor = useColorModeValue('coolGray.200', 'coolGray.700');
+  const appBg = useColorModeValue('coolGray.50', 'black');
 
-  const renderLogItem = ({ item }: { item: ActivityLog }) => (
-    <Box 
-      bg={cardBg} 
-      p="4" 
-      mx="4" 
-      my="2" 
-      borderRadius="2xl" 
-      shadow={1}
-      borderWidth={1}
-      borderColor={useColorModeValue('coolGray.50', 'coolGray.800')}
-    >
-      <VStack space={3}>
-        <HStack justifyContent="space-between" alignItems="center">
-          <HStack space={3} alignItems="center">
-            <Box p={2} borderRadius="full" bg="coolGray.100" _dark={{ bg: 'coolGray.800' }}>
-              <Icon as={<MaterialIcons name="person" />} size={5} color={themeColors.tint} />
-            </Box>
-            <VStack>
-              <Text fontWeight="bold" fontSize="md" color={textColor}>
-                {item.userName}
-              </Text>
-              <Text fontSize="xs" color={subTextColor}>
-                {item.userEmail}
-              </Text>
-            </VStack>
-          </HStack>
-          <Badge 
-            colorScheme={item.userRole === 'admin' ? 'danger' : 'info'} 
-            variant="subtle" 
-            rounded="lg"
-            px={2}
-          >
-            {item.userRole.toUpperCase()}
-          </Badge>
-        </HStack>
-
-        <Divider opacity={0.5} />
-
-        <HStack justifyContent="space-between" alignItems="center">
-          <HStack space={2} alignItems="center" flex={1}>
-            <Box p={1.5} borderRadius="md" bg="primary.50" _dark={{ bg: 'primary.900' }}>
-              <Icon as={<MaterialIcons name="bolt" />} size={4} color={themeColors.tint} />
-            </Box>
-            <Text fontWeight="semibold" fontSize="sm" color={textColor} numberOfLines={1}>
-              {item.action}
-            </Text>
-          </HStack>
-          <Badge variant="outline" colorScheme="coolGray" rounded="md">
-            {item.method}
-          </Badge>
-        </HStack>
-
-        <HStack justifyContent="space-between" alignItems="center">
-          <HStack space={1} alignItems="center">
-            <Icon as={<MaterialIcons name="lan" />} size="xs" color={subTextColor} />
-            <Text fontSize="xs" color={subTextColor}>{item.ip}</Text>
-          </HStack>
-          <HStack space={1} alignItems="center">
-            <Icon as={<MaterialIcons name="schedule" />} size="xs" color={subTextColor} />
-            <Text fontSize="xs" color={subTextColor}>
-              {new Date(item.createdAt).toLocaleString()}
-            </Text>
-          </HStack>
-        </HStack>
-      </VStack>
-    </Box>
-  );
+  const renderLogItem = useCallback(({ item }: { item: ActivityLog }) => (
+    <LogItem item={item} themeColors={themeColors} />
+  ), [themeColors]);
 
   return (
-    <Box flex={1} bg={useColorModeValue('coolGray.50', 'black')}>
+    <Box flex={1} bg={appBg}>
       <AdminHeader title="Histórico" onMenuPress={() => setIsSidebarOpen(true)} />
       <AdminSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       
@@ -212,7 +224,7 @@ export default function ActivityLogScreen() {
                 px={4}
                 height={12}
                 borderWidth={1}
-                borderColor={useColorModeValue('coolGray.200', 'coolGray.700')}
+                borderColor={headerBorderColor}
               >
                 <Icon as={<MaterialIcons name="search" />} size="5" color={subTextColor} />
                 <TextInput 
@@ -241,7 +253,7 @@ export default function ActivityLogScreen() {
                   onValueChange={itemValue => setRole(itemValue)}
                   bg={inputBg}
                   borderWidth={1}
-                  borderColor={useColorModeValue('coolGray.200', 'coolGray.700')}
+                  borderColor={headerBorderColor}
                   borderRadius="xl"
                   h={10}
                 >
@@ -261,7 +273,7 @@ export default function ActivityLogScreen() {
                   onValueChange={itemValue => setAction(itemValue)}
                   bg={inputBg}
                   borderWidth={1}
-                  borderColor={useColorModeValue('coolGray.200', 'coolGray.700')}
+                  borderColor={headerBorderColor}
                   borderRadius="xl"
                   h={10}
                 >

@@ -32,6 +32,9 @@ export class User {
     role: string;
 
     @Prop({ required: false })
+    sector: string;
+
+    @Prop({ required: false })
     salary: number;
 
     @Prop({ required: true, default: true })
@@ -42,6 +45,9 @@ export class User {
 
     @Prop({ type: Phone })
     phone: Phone;
+
+    @Prop()
+    imageUrl: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

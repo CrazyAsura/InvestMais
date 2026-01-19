@@ -72,6 +72,8 @@ export default function RootLayout() {
                   <Stack.Screen name="login" options={{ headerShown: false }} />
                   <Stack.Screen name="register" options={{ headerShown: false }} />
                   <Stack.Screen name="edit-profile" options={{ headerShown: false }} />
+                  <Stack.Screen name="cart" options={{ headerShown: false }} />
+                  <Stack.Screen name="product/[id]" options={{ headerShown: false }} />
                   <Stack.Screen name="reset-password" options={{ headerShown: false }} />
                   <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                   <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />

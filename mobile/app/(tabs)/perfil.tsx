@@ -131,6 +131,7 @@ export default function PerfilScreen() {
             size="2xl" 
             bg={themeColors.tint}
             _text={{ fontSize: '3xl', fontWeight: 'bold' }}
+            source={user?.imageUrl ? { uri: user.imageUrl } : undefined}
           >
             {user?.name?.charAt(0).toUpperCase() || 'U'}
           </Avatar>

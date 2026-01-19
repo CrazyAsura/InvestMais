@@ -11,6 +11,7 @@ export const Colors = {
   light: {
     text: '#000000',
     background: '#FFFFFF',
+    card: '#FFFFFF',
     tint: gold,
     icon: '#687076',
     tabIconDefault: '#687076',
@@ -19,6 +20,7 @@ export const Colors = {
   dark: {
     text: '#FFFFFF',
     background: '#000000',
+    card: '#1F2937',
     tint: gold,
     icon: '#9BA1A6',
     tabIconDefault: '#9BA1A6',

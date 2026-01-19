@@ -28,4 +28,16 @@ api.interceptors.request.use(async (config) => {
   return config;
 });
 
+// Interceptor para tratar erros globais
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Opcional: Redirecionar para login ou limpar o estado de auth
+      console.warn('Sessão expirada ou não autorizada. Verifique o login.');
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default api;

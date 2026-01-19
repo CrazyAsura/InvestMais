@@ -11,16 +11,18 @@ import {
 } from 'redux-persist';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import authReducer from './slices/authSlice';
+import cartReducer from './slices/cartSlice';
 import { injectStore } from '../services/api';
 
 const rootReducer = combineReducers({
   auth: authReducer,
+  cart: cartReducer,
 });
 
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
-  whitelist: ['auth'], // Persist only auth slice
+  whitelist: ['auth', 'cart'], // Persist auth and cart slices
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

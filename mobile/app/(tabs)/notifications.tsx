@@ -28,38 +28,12 @@ interface Notification {
   createdAt: string;
 }
 
-export default function UserNotifications() {
-  const colorScheme = useColorScheme() ?? 'light';
-  const themeColors = Colors[colorScheme];
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(true);
-
+const NotificationItem = React.memo(({ item, themeColors, onRead }: { 
+  item: Notification, 
+  themeColors: any,
+  onRead: (id: string) => void
+}) => {
   const cardBg = useColorModeValue('white', 'coolGray.800');
-
-  const fetchMyNotifications = async () => {
-    try {
-      setLoading(true);
-      const response = await api.get('/notifications/my');
-      setNotifications(response.data);
-    } catch (error) {
-      console.error('Erro ao buscar notificações:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchMyNotifications();
-  }, []);
-
-  const markAsRead = async (id: string) => {
-    try {
-      await api.patch(`/notifications/${id}/read`);
-      setNotifications(notifications.map(n => n._id === id ? { ...n, isRead: true } : n));
-    } catch (error) {
-      console.error('Erro ao marcar como lida:', error);
-    }
-  };
 
   const getTypeColor = (type: string) => {
     switch (type) {
@@ -70,8 +44,8 @@ export default function UserNotifications() {
     }
   };
 
-  const renderItem = ({ item }: { item: Notification }) => (
-    <Pressable onPress={() => markAsRead(item._id)}>
+  return (
+    <Pressable onPress={() => onRead(item._id)}>
       <Box 
         bg={cardBg} 
         p={4} 
@@ -97,6 +71,46 @@ export default function UserNotifications() {
       </Box>
     </Pressable>
   );
+});
+
+export default function UserNotifications() {
+  const colorScheme = useColorScheme() ?? 'light';
+  const themeColors = Colors[colorScheme];
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const markAsRead = React.useCallback(async (id: string) => {
+    try {
+      await api.patch(`/notifications/${id}/read`);
+      setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
+    } catch (error) {
+      console.error('Erro ao marcar como lida:', error);
+    }
+  }, []);
+
+  const renderItem = React.useCallback(({ item }: { item: Notification }) => (
+    <NotificationItem 
+      item={item} 
+      themeColors={themeColors} 
+      onRead={markAsRead} 
+    />
+  ), [themeColors, markAsRead]);
+
+  const fetchMyNotifications = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get('/notifications/my');
+      setNotifications(response.data);
+    } catch (error) {
+      console.error('Erro ao buscar notificações:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMyNotifications();
+  }, []);
 
   return (
     <Box flex={1} bg={themeColors.background}>

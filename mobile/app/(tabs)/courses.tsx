@@ -15,24 +15,41 @@ import {
   Spacer
 } from 'native-base';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { CourseService, Course } from '@/services/courseService';
 
 export default function CoursesScreen() {
+  const router = useRouter();
   const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [recommended, setRecommended] = useState<Course[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
+  const fetchCourses = async () => {
+    try {
+      const [allCourses, recCourses] = await Promise.all([
+        CourseService.getCourses(),
+        CourseService.getRecommendedCourses()
+      ]);
+      setCourses(allCourses);
+      setRecommended(recCourses);
+    } catch (error) {
+      console.error('Error fetching courses:', error);
+    } finally {
       setIsLoading(false);
-    }, 1800);
-    return () => clearTimeout(timer);
+    }
+  };
+
+  useEffect(() => {
+    fetchCourses();
   }, []);
 
-  const CourseCard = ({ title, instructor, progress, lessons, icon }: any) => (
-    <Pressable>
+  const CourseCard = ({ id, title, instructor, progress = 0, lessonsCount, icon }: any) => (
+    <Pressable onPress={() => router.push(`/courses/${id}` as any)}>
       <Box 
         bg={colorScheme === 'dark' ? 'coolGray.800' : 'white'} 
         p={4} 
@@ -47,11 +64,11 @@ export default function CoursesScreen() {
           </Circle>
           <VStack flex={1} space={1}>
             <Heading size="xs" color={themeColors.text}>{title}</Heading>
-            <Text fontSize="xs" color={themeColors.icon}>{instructor} • {lessons} aulas</Text>
+            <Text fontSize="xs" color={themeColors.icon}>{instructor} • {lessonsCount} aulas</Text>
             <VStack space={1} mt={2}>
                <HStack justifyContent="space-between">
-                 <Text fontSize="10px" color={themeColors.icon}>Progresso</Text>
-                 <Text fontSize="10px" fontWeight="bold" color={themeColors.tint}>{progress}%</Text>
+                 <Text fontSize={10} color={themeColors.icon}>Progresso</Text>
+                 <Text fontSize={10} fontWeight="bold" color={themeColors.tint}>{progress}%</Text>
                </HStack>
                <Progress value={progress} size="xs" colorScheme="amber" />
             </VStack>
@@ -109,49 +126,44 @@ export default function CoursesScreen() {
         <Heading color={themeColors.text}>Meus Cursos</Heading>
 
         <VStack space={4}>
-          <CourseCard 
-            title="Introdução aos Investimentos" 
-            instructor="Prof. Ricardo" 
-            progress={75} 
-            lessons={12} 
-            icon="school" 
-          />
-          <CourseCard 
-            title="Renda Fixa na Prática" 
-            instructor="Dra. Mariana" 
-            progress={30} 
-            lessons={8} 
-            icon="account-balance" 
-          />
-          <CourseCard 
-            title="Mentalidade Financeira" 
-            instructor="Coach Carlos" 
-            progress={100} 
-            lessons={5} 
-            icon="psychology" 
-          />
+          {courses.map((course) => (
+            <CourseCard 
+              key={course._id}
+              id={course._id}
+              title={course.title}
+              instructor={course.instructor}
+              progress={course.progress || 0}
+              lessonsCount={course.lessonsCount}
+              icon={course.icon}
+            />
+          ))}
+          {courses.length === 0 && (
+            <Box p={4} bg={themeColors.card} rounded="xl" alignItems="center">
+              <Text color={themeColors.icon}>Nenhum curso encontrado</Text>
+            </Box>
+          )}
         </VStack>
 
         <Heading size="md" color={themeColors.text} mt={4}>Recomendados</Heading>
         <HStack space={4}>
-          <Pressable flex={1}>
-            <VStack space={2}>
-              <Box bg="amber.100" h="32" rounded="xl" justifyContent="center" alignItems="center">
-                <Icon as={<MaterialIcons name="show-chart" />} size={12} color="amber.500" />
-              </Box>
-              <Text fontWeight="bold" fontSize="xs" color={themeColors.text}>Day Trade para Iniciantes</Text>
-              <Text fontSize="10px" color={themeColors.icon}>R$ 199,90</Text>
-            </VStack>
-          </Pressable>
-          <Pressable flex={1}>
-            <VStack space={2}>
-              <Box bg="blue.100" h="32" rounded="xl" justifyContent="center" alignItems="center">
-                <Icon as={<MaterialIcons name="business" />} size={12} color="blue.500" />
-              </Box>
-              <Text fontWeight="bold" fontSize="xs" color={themeColors.text}>Fundos Imobiliários</Text>
-              <Text fontSize="10px" color={themeColors.icon}>R$ 149,90</Text>
-            </VStack>
-          </Pressable>
+          {recommended.map((course) => (
+            <Pressable key={course._id} flex={1} onPress={() => router.push(`/courses/${course._id}` as any)}>
+              <VStack space={2}>
+                <Box bg="amber.100" h="32" rounded="xl" justifyContent="center" alignItems="center">
+                  <Icon as={<MaterialIcons name={course.icon as any} />} size={12} color="amber.500" />
+                </Box>
+                <Text fontWeight="bold" fontSize="xs" color={themeColors.text}>{course.title}</Text>
+                <Text fontSize={10} color={themeColors.icon}>
+                  {course.price === 0 ? 'Grátis' : `R$ ${course.price?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
+                </Text>
+              </VStack>
+            </Pressable>
+          ))}
+          {recommended.length === 0 && (
+            <Box p={4} flex={1} bg={themeColors.card} rounded="xl" alignItems="center">
+              <Text color={themeColors.icon}>Nenhuma recomendação</Text>
+            </Box>
+          )}
         </HStack>
       </VStack>
     </ScrollView>

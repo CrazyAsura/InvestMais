@@ -1,5 +1,5 @@
 import React from 'react';
-import { useColorScheme } from 'react-native';
+import { useColorScheme, Dimensions } from 'react-native';
 import { 
   Box, 
   VStack, 
@@ -10,30 +10,42 @@ import {
   Heading, 
   Divider,
   IconButton,
-  useColorModeValue
+  useColorModeValue,
+  Avatar
 } from 'native-base';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter, usePathname } from 'expo-router';
 import { Colors } from '@/constants/theme';
+import { useAppSelector } from '@/store/hooks';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 interface AdminSidebarProps {
   isOpen: boolean;
   onClose: () => void;
+  activePage?: string;
 }
 
-export const AdminSidebar = ({ isOpen, onClose }: AdminSidebarProps) => {
+export const AdminSidebar = ({ isOpen, onClose, activePage }: AdminSidebarProps) => {
   const router = useRouter();
   const pathname = usePathname();
   const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
+  const { user } = useAppSelector((state) => state.auth);
   
   const bgColor = useColorModeValue('white', 'coolGray.900');
   const activeBg = useColorModeValue('rgba(212, 175, 55, 0.1)', 'rgba(212, 175, 55, 0.2)');
   const inactiveColor = useColorModeValue('coolGray.500', 'coolGray.400');
   const textColor = useColorModeValue('coolGray.800', 'white');
+  const pressedBg = useColorModeValue('coolGray.100', 'coolGray.800');
+  const profileSummaryBg = useColorModeValue('coolGray.50', 'coolGray.800');
 
   const menuOptions = [
     { name: 'Dashboard', icon: 'dashboard', route: '/admin/dashboard' },
+    { name: 'Produtos', icon: 'inventory', route: '/admin/store/products' },
+    { name: 'Categorias', icon: 'category', route: '/admin/store/categories' },
+    { name: 'Notícias', icon: 'article', route: '/admin/news' },
+    { name: 'Cursos', icon: 'school', route: '/admin/courses' },
     { name: 'Usuários', icon: 'people', route: '/admin/users' },
     { name: 'Histórico', icon: 'history', route: '/admin/activity-log' },
     { name: 'Notificações', icon: 'notifications', route: '/admin/notifications' },
@@ -71,55 +83,79 @@ export const AdminSidebar = ({ isOpen, onClose }: AdminSidebarProps) => {
                 onPress={onClose}
                 variant="ghost"
                 borderRadius="full"
-                _pressed={{ bg: useColorModeValue('coolGray.100', 'coolGray.800') }}
+                _pressed={{ bg: pressedBg }}
               />
             </HStack>
 
-            <Divider mb={4} opacity={0.2} bg={inactiveColor} />
+            {/* User Profile Summary */}
+            <HStack space={3} alignItems="center" mb={8} bg={profileSummaryBg} p={3} borderRadius="2xl">
+              <Avatar bg={themeColors.tint} size="sm">
+                {user?.name?.charAt(0).toUpperCase() || 'A'}
+              </Avatar>
+              <VStack>
+                <Text fontWeight="bold" fontSize="sm" color={textColor} numberOfLines={1}>
+                  {user?.name || 'Administrador'}
+                </Text>
+                <Text fontSize="xs" color={inactiveColor} numberOfLines={1}>
+                  {user?.email || 'admin@investmais.com'}
+                </Text>
+              </VStack>
+            </HStack>
 
-            {menuOptions.map((item) => {
-              const isActive = pathname === item.route;
-              return (
-                <Pressable 
-                  key={item.name} 
-                  p={4} 
-                  borderRadius="xl"
-                  bg={isActive ? activeBg : 'transparent'}
-                  _pressed={{ bg: activeBg }}
-                  onPress={() => {
-                    onClose();
-                    router.push(item.route as any);
-                  }}
-                >
-                  <HStack space={4} alignItems="center">
-                    <Icon 
-                      as={<MaterialIcons name={item.icon as any} />} 
-                      size={6} 
-                      color={isActive ? themeColors.tint : inactiveColor} 
-                    />
-                    <Text 
-                      fontSize="md" 
-                      fontWeight={isActive ? 'bold' : 'medium'}
-                      color={isActive ? themeColors.tint : textColor}
-                    >
-                      {item.name}
-                    </Text>
-                  </HStack>
-                </Pressable>
-              );
-            })}
+            <VStack space={2}>
+              {menuOptions.map((item) => {
+                const isActive = pathname === item.route;
+                return (
+                  <Pressable 
+                    key={item.name} 
+                    py={3.5} 
+                    px={4}
+                    borderRadius="2xl"
+                    bg={isActive ? activeBg : 'transparent'}
+                    onPress={() => {
+                      onClose();
+                      router.push(item.route as any);
+                    }}
+                  >
+                    <HStack space={4} alignItems="center">
+                      <Box 
+                        p={2} 
+                        borderRadius="xl" 
+                        bg={isActive ? themeColors.tint : 'transparent'}
+                      >
+                        <Icon 
+                          as={<MaterialIcons name={item.icon as any} />} 
+                          size={5} 
+                          color={isActive ? 'white' : inactiveColor} 
+                        />
+                      </Box>
+                      <Text 
+                        fontSize="md" 
+                        fontWeight={isActive ? '700' : '600'}
+                        color={isActive ? themeColors.tint : textColor}
+                      >
+                        {item.name}
+                      </Text>
+                    </HStack>
+                  </Pressable>
+                );
+              })}
+            </VStack>
 
-            <VStack mt="auto" mb={6} space={2}>
-                <Divider mb={4} opacity={0.2} bg={inactiveColor} />
+            <VStack mt="auto" space={4}>
+                <Divider opacity={0.1} />
                 <Pressable 
-                  p={4} 
-                  borderRadius="xl"
-                  _pressed={{ bg: 'rgba(255, 0, 0, 0.1)' }}
+                  py={3.5} 
+                  px={4}
+                  borderRadius="2xl"
+                  _pressed={{ bg: 'rgba(239, 68, 68, 0.1)' }}
                   onPress={() => router.replace('/(tabs)')}
                 >
                   <HStack space={4} alignItems="center">
-                    <Icon as={<MaterialIcons name="exit-to-app" />} size={6} color="error.500" />
-                    <Text fontSize="md" color="error.500" fontWeight="medium">Sair do Admin</Text>
+                    <Box p={2} borderRadius="xl" bg="rgba(239, 68, 68, 0.1)">
+                      <Icon as={<MaterialIcons name="logout" />} size={5} color="error.500" />
+                    </Box>
+                    <Text fontSize="md" color="error.500" fontWeight="700">Sair do Admin</Text>
                   </HStack>
                 </Pressable>
             </VStack>
