@@ -49,6 +49,12 @@ export default function AdminLayout() {
           title: 'Gestão de Funcionários'
         }} 
       />
+      <Stack.Screen 
+        name="analyst/index" 
+        options={{ 
+          title: 'Análise de Dados'
+        }} 
+      />
     </Stack>
   );
 }

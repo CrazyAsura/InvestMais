@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "@react-navigation/bottom-tabs": "^7.10.0",
-    "@tamagui/lucide-icons": "^1.144.2"
-  }
-}

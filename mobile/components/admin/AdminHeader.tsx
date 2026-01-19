@@ -7,12 +7,14 @@ import {
   useColorModeValue,
   Box,
   Text,
-  Pressable
+  Pressable,
+  Avatar
 } from 'native-base';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useRouter } from 'expo-router';
+import { useAppSelector } from '@/store/hooks';
 
 interface AdminHeaderProps {
   title: string;
@@ -25,10 +27,12 @@ export const AdminHeader = ({ title, onMenuPress, showBackButton, onBackPress }:
   const router = useRouter();
   const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
+  const { user } = useAppSelector((state) => state.auth);
   
-  const bgColor = useColorModeValue('white', '#111827'); // Darker background for dark mode
-  const borderColor = useColorModeValue('coolGray.100', 'coolGray.800');
+  const bgColor = useColorModeValue('white', 'coolGray.900');
+  const borderColor = useColorModeValue('coolGray.200', 'coolGray.800');
   const pressedBg = useColorModeValue('coolGray.100', 'coolGray.800');
+  const textColor = useColorModeValue('coolGray.800', 'white');
 
   const handleBack = () => {
     if (onBackPress) {
@@ -58,7 +62,7 @@ export const AdminHeader = ({ title, onMenuPress, showBackButton, onBackPress }:
               <Icon 
                 as={<MaterialIcons name="arrow-back-ios" />} 
                 size={5} 
-                color={themeColors.text}
+                color={textColor}
               />
             </Pressable>
           ) : (
@@ -77,14 +81,14 @@ export const AdminHeader = ({ title, onMenuPress, showBackButton, onBackPress }:
           )}
           <Heading 
             size="md" 
-            color={themeColors.text} 
+            color={textColor} 
             fontWeight="800"
           >
             {title}
           </Heading>
         </HStack>
         
-        <HStack space={2}>
+        <HStack space={2} alignItems="center">
           <Pressable 
             p={2}
             borderRadius="full"
@@ -93,7 +97,15 @@ export const AdminHeader = ({ title, onMenuPress, showBackButton, onBackPress }:
             <Icon 
               as={<MaterialIcons name="notifications-none" />} 
               size={6} 
-              color={themeColors.text}
+              color={textColor}
+            />
+          </Pressable>
+          <Pressable onPress={() => router.push('/(tabs)/profile' as any)}>
+            <Avatar 
+              source={{ uri: user?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=150&auto=format&fit=crop' }} 
+              size="sm"
+              borderWidth={1}
+              borderColor="blue.500"
             />
           </Pressable>
         </HStack>

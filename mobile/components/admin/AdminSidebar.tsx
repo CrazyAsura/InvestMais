@@ -42,6 +42,8 @@ export const AdminSidebar = ({ isOpen, onClose, activePage }: AdminSidebarProps)
 
   const menuOptions = [
     { name: 'Dashboard', icon: 'dashboard', route: '/admin/dashboard' },
+    { name: 'Funcionários', icon: 'badge', route: '/admin/employees' },
+    { name: 'Análise de Dados', icon: 'analytics', route: '/admin/analyst' },
     { name: 'Produtos', icon: 'inventory', route: '/admin/store/products' },
     { name: 'Categorias', icon: 'category', route: '/admin/store/categories' },
     { name: 'Notícias', icon: 'article', route: '/admin/news' },

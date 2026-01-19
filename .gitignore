@@ -1,9 +1,0 @@
-node_modules/
-.expo/
-dist/
-build/
-.DS_Store
-*.log
-.env*
-InvestMais.env
-!.env.example

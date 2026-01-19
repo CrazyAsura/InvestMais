@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ScrollView, Dimensions } from 'react-native';
+import { ScrollView, useWindowDimensions } from 'react-native';
 import { useRouter, Href } from 'expo-router';
 import { 
   Box, 
@@ -20,8 +20,6 @@ import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useAppSelector } from '@/store/hooks';
-
-const { width } = Dimensions.get('window');
 
 type Sector = 'administrativo' | 'contabil' | 'acessoria' | 'suporte' | 'rh' | 'ti';
 
@@ -147,6 +145,7 @@ const SECTORS: Record<Sector, SectorInfo> = {
 
 
 export default function EmployeesScreen() {
+  const { width } = useWindowDimensions();
   const router = useRouter();
   const { user } = useAppSelector((state) => state.auth);
   const isAdmin = user?.role === 'admin';
@@ -155,17 +154,18 @@ export default function EmployeesScreen() {
   const [selectedSector, setSelectedSector] = useState<Sector>('administrativo');
 
   const cardBg = useColorModeValue('white', 'coolGray.900');
-  const appBg = useColorModeValue('coolGray.50', '#050505');
-  const borderColor = useColorModeValue('coolGray.100', 'coolGray.800');
+  const appBg = useColorModeValue('coolGray.50', 'black');
+  const borderColor = useColorModeValue('coolGray.200', 'coolGray.800');
   const secondaryTextColor = useColorModeValue('coolGray.500', 'coolGray.400');
+  const headingColor = useColorModeValue('coolGray.800', 'white');
   const sectorInfo = SECTORS[selectedSector];
 
   return (
     <Box flex={1} bg={appBg}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1 }}>
         <VStack space={6} p={4} pb={10}>
           <VStack space={1}>
-            <Heading size="xl" color={themeColors.text}>Setores</Heading>
+            <Heading size="xl" color={headingColor}>Setores</Heading>
             <Text color={secondaryTextColor} fontSize="md">Gestão e monitoramento por departamento</Text>
           </VStack>
 
@@ -187,8 +187,9 @@ export default function EmployeesScreen() {
                         borderRadius="2xl" 
                         alignItems="center" 
                         justifyContent="center"
-                        minW={width * 0.3}
-                        shadow={isSelected ? 6 : 2}
+                        minW={width * 0.28}
+                        maxW={width * 0.35}
+                        shadow={isSelected ? 4 : 1}
                         borderWidth={1}
                         borderColor={isSelected ? info.color : borderColor}
                       >
@@ -208,8 +209,9 @@ export default function EmployeesScreen() {
                         <Text 
                           fontSize="xs" 
                           fontWeight="bold" 
-                          color={isSelected ? 'white' : themeColors.text}
+                          color={isSelected ? 'white' : headingColor}
                           textAlign="center"
+                          numberOfLines={1}
                         >
                           {info.title}
                         </Text>
@@ -229,7 +231,7 @@ export default function EmployeesScreen() {
               borderRadius="3xl" 
               borderWidth={1} 
               borderColor={borderColor}
-              shadow={3}
+              shadow={2}
             >
               <HStack alignItems="center" justifyContent="space-between" mb={6}>
                 <HStack space={3} alignItems="center">
@@ -242,7 +244,7 @@ export default function EmployeesScreen() {
                     />
                   </Center>
                   <VStack>
-                    <Heading size="md" color={themeColors.text}>{sectorInfo.title}</Heading>
+                    <Heading size="md" color={headingColor}>{sectorInfo.title}</Heading>
                     <HStack space={1} alignItems="center">
                       <Box w={2} h={2} rounded="full" bg="emerald.500" />
                       <Text fontSize="xs" color="emerald.500" fontWeight="bold">SISTEMA ATIVO</Text>
@@ -250,17 +252,17 @@ export default function EmployeesScreen() {
                   </VStack>
                 </HStack>
                 <Pressable onPress={() => router.push(`/admin/sectors/${selectedSector}` as Href)}>
-                  <Center bg="coolGray.100" _dark={{ bg: 'coolGray.800' }} p={2} borderRadius="full">
-                    <Icon as={MaterialIcons} name="arrow-forward" size={5} color={themeColors.text} />
+                  <Center bg="coolGray.100" _dark={{ bg: 'coolGray.800' }} p={2.5} borderRadius="full">
+                    <Icon as={MaterialIcons} name="arrow-forward" size={5} color={headingColor} />
                   </Center>
                 </Pressable>
               </HStack>
 
-              <SimpleGrid columns={2} space={4}>
+              <SimpleGrid columns={width > 400 ? 2 : 1} space={4}>
                 {sectorInfo.stats.map((stat, index) => (
-                  <VStack key={index} space={1}>
+                  <VStack key={index} space={1} p={2} bg="coolGray.50" _dark={{ bg: 'coolGray.800' }} borderRadius="xl">
                     <Text fontSize="xs" color={secondaryTextColor} fontWeight="medium">{stat.label}</Text>
-                    <Text fontSize="xl" fontWeight="bold" color={themeColors.text}>{stat.value}</Text>
+                    <Text fontSize="lg" fontWeight="bold" color={headingColor}>{stat.value}</Text>
                     {stat.progress !== undefined && (
                       <Progress 
                         mt={1} 
@@ -280,11 +282,13 @@ export default function EmployeesScreen() {
             {/* Ações Rápidas */}
             <VStack space={3}>
               <HStack alignItems="center" justifyContent="space-between" px={1}>
-                <Heading size="sm" color={themeColors.text}>Ações Rápidas</Heading>
-                <Text color={sectorInfo.color} fontWeight="bold" fontSize="xs">VER TODAS</Text>
+                <Heading size="sm" color={headingColor}>Ações Rápidas</Heading>
+                <Pressable>
+                  <Text color={sectorInfo.color} fontWeight="bold" fontSize="xs">VER TODAS</Text>
+                </Pressable>
               </HStack>
               
-              <SimpleGrid columns={2} space={3}>
+              <SimpleGrid columns={width > 400 ? 2 : 1} space={3}>
                 {sectorInfo.actions.slice(0, 4).map((action, index) => (
                   <Pressable 
                     key={index}
@@ -303,7 +307,7 @@ export default function EmployeesScreen() {
                       <Center bg={`${action.color}20`} p={2.5} borderRadius="xl">
                         <Icon as={MaterialIcons} name={action.icon as any} size={5} color={action.color} />
                       </Center>
-                      <Text fontWeight="bold" fontSize="xs" color={themeColors.text} flex={1}>{action.label}</Text>
+                      <Text fontWeight="bold" fontSize="xs" color={headingColor} flex={1}>{action.label}</Text>
                     </HStack>
                   </Pressable>
                 ))}
@@ -314,7 +318,7 @@ export default function EmployeesScreen() {
             <Box bg={cardBg} p={6} borderRadius="3xl" shadow={2} borderWidth={1} borderColor={borderColor}>
               <HStack justifyContent="space-between" alignItems="center" mb={6}>
                 <VStack>
-                  <Text fontWeight="bold" fontSize="md" color={themeColors.text}>Desempenho Semanal</Text>
+                  <Text fontWeight="bold" fontSize="md" color={headingColor}>Desempenho Semanal</Text>
                   <Text fontSize="xs" color={secondaryTextColor}>Métricas de produtividade</Text>
                 </VStack>
                 <Icon as={MaterialIcons} name="insights" color={sectorInfo.color} size={6} />
@@ -341,10 +345,10 @@ export default function EmployeesScreen() {
                 <Divider bg={borderColor} />
                 <HStack space={2} alignItems="center" px={1}>
                   <Icon as={MaterialIcons} name="admin-panel-settings" size={6} color={secondaryTextColor} />
-                  <Heading size="sm" color={themeColors.text}>Administração Global</Heading>
+                  <Heading size="sm" color={headingColor}>Administração Global</Heading>
                 </HStack>
                 
-                <SimpleGrid columns={3} space={3}>
+                <SimpleGrid columns={width > 400 ? 3 : 2} space={3}>
                   {[
                     { label: 'Setores', icon: 'category', color: 'blue.500' },
                     { label: 'Acessos', icon: 'lock-open', color: 'orange.500' },
@@ -359,11 +363,12 @@ export default function EmployeesScreen() {
                         space={2}
                         borderWidth={1}
                         borderColor={borderColor}
+                        shadow={1}
                       >
                         <Center bg={`${action.color}15`} p={3} borderRadius="full">
                           <Icon as={MaterialIcons} name={action.icon as any} size={5} color={action.color} />
                         </Center>
-                        <Text fontWeight="bold" fontSize="10" color={themeColors.text}>{action.label}</Text>
+                        <Text fontWeight="bold" fontSize="xs" color={headingColor} textAlign="center">{action.label}</Text>
                       </VStack>
                     </Pressable>
                   ))}

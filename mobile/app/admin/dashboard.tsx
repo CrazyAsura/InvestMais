@@ -175,19 +175,19 @@ export default function AdminDashboard() {
             <Heading size="sm" color={textColor} fontWeight="700">Ações Rápidas</Heading>
             <HStack space={3}>
               <QuickAction 
-                title="Produtos" 
-                icon="inventory" 
-                color="orange" 
-                onPress={() => router.push('/admin/store/products')}
+                title="Funcionários" 
+                icon="badge" 
+                color="blue" 
+                onPress={() => router.push('/admin/employees' as Href)}
                 cardBg={cardBg}
                 textColor={textColor}
                 borderColor={borderColor}
               />
               <QuickAction 
-                title="Categorias" 
-                icon="category" 
-                color="teal" 
-                onPress={() => router.push('/admin/store/categories')}
+                title="Análise" 
+                icon="analytics" 
+                color="emerald" 
+                onPress={() => router.push('/admin/analyst' as Href)}
                 cardBg={cardBg}
                 textColor={textColor}
                 borderColor={borderColor}
@@ -195,8 +195,8 @@ export default function AdminDashboard() {
               <QuickAction 
                 title="Usuários" 
                 icon="person" 
-                color="blue" 
-                onPress={() => router.push('/admin/users')}
+                color="indigo" 
+                onPress={() => router.push('/admin/users' as Href)}
                 cardBg={cardBg}
                 textColor={textColor}
                 borderColor={borderColor}
@@ -205,19 +205,19 @@ export default function AdminDashboard() {
 
             <HStack space={3}>
               <QuickAction 
-                title="Notícias" 
-                icon="article" 
-                color="amber" 
-                onPress={() => router.push('/admin/news')}
+                title="Produtos" 
+                icon="inventory" 
+                color="orange" 
+                onPress={() => router.push('/admin/store/products' as Href)}
                 cardBg={cardBg}
                 textColor={textColor}
                 borderColor={borderColor}
               />
               <QuickAction 
-                title="Cursos" 
-                icon="school" 
-                color="indigo" 
-                onPress={() => router.push('/admin/courses' as Href)}
+                title="Notícias" 
+                icon="article" 
+                color="amber" 
+                onPress={() => router.push('/admin/news' as Href)}
                 cardBg={cardBg}
                 textColor={textColor}
                 borderColor={borderColor}
@@ -226,7 +226,7 @@ export default function AdminDashboard() {
                 title="Logs" 
                 icon="history" 
                 color="gray" 
-                onPress={() => router.push('/admin/activity-log')}
+                onPress={() => router.push('/admin/activity-log' as Href)}
                 cardBg={cardBg}
                 textColor={textColor}
                 borderColor={borderColor}
